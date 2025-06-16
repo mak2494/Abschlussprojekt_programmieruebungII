@@ -24,5 +24,5 @@ def plot_data(df):
     fig.show()
 
 if __name__ == "__main__":
-    df = read_my_csv("data/CTG_data/CTG_twins_hypertension.csv")
+    df = read_my_csv("data/CTG_data/CTG_data2.csv")
     plot_data(df)
