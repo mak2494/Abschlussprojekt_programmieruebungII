@@ -23,7 +23,7 @@ class Person:
         self.pregnancies = person_dict.get("pregnancies", 0)
         self.fetuses = person_dict.get("fetuses", 0)
         self.gestational_age_weeks = person_dict.get("gestational_age_weeks", 0)
-        self.ekg_tests = person_dict.get("ekg_tests", [])
+        self.CTG_tests = person_dict.get("CTG_tests", [])
 
         # NEU: erstelle Liste mit echten Fetus-Objekten
         self.fetuses_list = []
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         print(f"Anzahl Schwangerschaften: {person_obj.pregnancies}")
         print(f"Anzahl Föten: {person_obj.fetuses}")
         print(f"Schwangerschaftswoche: {person_obj.gestational_age_weeks}")
-        print(f"CTG-Daten: {person_obj.ekg_tests}")
+        print(f"CTG-Daten: {person_obj.CTG_tests}")
 
         # Föten ausgeben
         print("Föten:")
