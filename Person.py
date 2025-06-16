@@ -1,6 +1,16 @@
 import json
 from datetime import datetime
 
+
+class Fetus:
+    def __init__(self, name, gestational_age_weeks):
+        self.name = name
+        self.gestational_age_weeks = gestational_age_weeks
+
+    def __str__(self):
+        return f"Fötus: {self.name}, Schwangerschaftswoche: {self.gestational_age_weeks}"
+
+
 class Person:
     def __init__(self, person_dict) -> None:
         self.date_of_birth = person_dict["date_of_birth"]
@@ -12,31 +22,31 @@ class Person:
         self.medical_conditions = person_dict.get("medical_conditions", [])
         self.pregnancies = person_dict.get("pregnancies", 0)
         self.fetuses = person_dict.get("fetuses", 0)
+        self.gestational_age_weeks = person_dict.get("gestational_age_weeks", 0)
         self.ekg_tests = person_dict.get("ekg_tests", [])
+
+        # NEU: erstelle Liste mit echten Fetus-Objekten
+        self.fetuses_list = []
+        for i in range(1, self.fetuses + 1):
+            fetus = Fetus(name=f"Fötus {i}", gestational_age_weeks=self.gestational_age_weeks)
+            self.fetuses_list.append(fetus)
 
     # Berechnet das Alter der Person
     def calculate_age(self):
         return datetime.today().year - int(self.date_of_birth)
 
-    # Berechnet ob es sich um eine Risikoschwangerschaft handelt
+    # Prüft, ob es eine Risikoschwangerschaft ist
     def is_high_risk_pregnancy(self):
         age = self.calculate_age()
         risk_conditions = ["Bluthochdruck", "Diabetes Typ 2"]
 
-    # Bedingung 1: Alter über 35
         if age > 35:
             return True
-
-    # Bedingung 2: Mehrlingsschwangerschaft
         if self.fetuses > 1:
             return True
-
-    # Bedingung 3: Vorerkrankungen, die Risiko erhöhen
         for condition in self.medical_conditions:
             if condition in risk_conditions:
                 return True
-
-    # Wenn keine Bedingung zutrifft, ist es keine Risikoschwangerschaft
         return False
 
     # Pfad zum Bild der Person zurückgeben
@@ -53,34 +63,27 @@ class Person:
 
     @staticmethod
     def load_person_data():
-        """Hier wird die neue Datei geladen"""
         with open("data/person_db.json") as file:
             person_data = json.load(file)
         return person_data
 
     @staticmethod
     def get_person_list(person_data):
-        """Gibt eine Liste aller Namen zurück"""
-        list_of_names = []
-        for eintrag in person_data:
-            list_of_names.append(eintrag["lastname"] + ", " + eintrag["firstname"])
-        return list_of_names
+        return [f"{p['lastname']}, {p['firstname']}" for p in person_data]
 
     @staticmethod
     def find_person_data_by_name(suchstring):
         person_data = Person.load_person_data()
         if suchstring == "None":
             return {}
-
         two_names = suchstring.split(", ")
         vorname = two_names[1]
         nachname = two_names[0]
-
         for eintrag in person_data:
-            if (eintrag["lastname"] == nachname and eintrag["firstname"] == vorname):
+            if eintrag["lastname"] == nachname and eintrag["firstname"] == vorname:
                 return eintrag
-        else:
-            return {}
+        return {}
+
 
 if __name__ == "__main__":
     persons = Person.load_person_data()
@@ -90,22 +93,28 @@ if __name__ == "__main__":
     print(person_names)
     print()
 
-    # Beispiel: Eine Person suchen und ausgeben
+    # Beispiel: Eine Person suchen und anzeigen
     person_dict = Person.find_person_data_by_name("Klein, Sofia")
     if person_dict:
         person_obj = Person(person_dict)
 
-        age = person_obj.calculate_age()
-        print(f"Alter von {person_obj.firstname} {person_obj.lastname}: {age} Jahre")
-
+        print(f"ID: {person_obj.id}")
+        print(f"Name: {person_obj.firstname} {person_obj.lastname}")
+        print(f"Alter: {person_obj.calculate_age()} Jahre")
         print(f"Vorerkrankungen: {person_obj.medical_conditions}")
         print(f"Anzahl Schwangerschaften: {person_obj.pregnancies}")
-        print(f"Aktuelle Föten: {person_obj.fetuses}")
+        print(f"Anzahl Föten: {person_obj.fetuses}")
+        print(f"Schwangerschaftswoche: {person_obj.gestational_age_weeks}")
         print(f"CTG-Daten: {person_obj.ekg_tests}")
 
+        # Föten ausgeben
+        print("Föten:")
+        for fetus in person_obj.fetuses_list:
+            print(f"  - {fetus}")
+
         if person_obj.is_high_risk_pregnancy():
-            print("Die Schwangerschaft ist eine RISIKOSCHWANGERSCHAFT.")
+            print("⚠️ Dies ist eine RISIKOSCHWANGERSCHAFT!")
         else:
-            print("Die Schwangerschaft ist KEINE Risikoschwangerschaft.")
+            print("✅ Keine Risikoschwangerschaft.")
     else:
         print("Person nicht gefunden.")
