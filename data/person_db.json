@@ -3,7 +3,7 @@
 	"date_of_birth": 1992,
 	"firstname": "Laura",
 	"lastname": "Müller",
-	"picture_path": "data/pictures/laura.jpg",
+	"picture_path": "data/pictures/Laura.jpg",
 	"gender": "female",
 	"medical_conditions": ["Asthma"],
 	"pregnancies": 1,
@@ -22,7 +22,7 @@
 	"date_of_birth": 1985,
 	"firstname": "Sofia",
 	"lastname": "Klein",
-	"picture_path": "data/pictures/sofia.jpg",
+	"picture_path": "data/pictures/Sofia.jpg",
 	"gender": "female",
 	"medical_conditions": ["Bluthochdruck"],
 	"pregnancies": 2,
@@ -37,7 +37,7 @@
 	"date_of_birth": 1978,
 	"firstname": "Miriam",
 	"lastname": "Schneider",
-	"picture_path": "data/pictures/miriam.jpg",
+	"picture_path": "data/pictures/Miriam.jpg",
 	"gender": "female",
 	"medical_conditions": ["Diabetes Typ 2"],
 	"pregnancies": 4,
@@ -46,23 +46,19 @@
 		"id": 8,
 		"date": "12.2.2023",
 		"result_link": "data/ekg_data/08_Ruhe.txt"
-	}, {
-		"id": 9,
-		"date": "15.3.2023",
-		"result_link": "data/ekg_data/09_Belastung.txt"
 	}]
 }, {
 	"id": 7,
 	"date_of_birth": 1990,
 	"firstname": "Nora",
 	"lastname": "Becker",
-	"picture_path": "data/pictures/nora.jpg",
+	"picture_path": "data/pictures/Nora.jpg",
 	"gender": "female",
 	"medical_conditions": ["Migräne"],
 	"pregnancies": 1,
 	"fetuses": 2,
 	"ekg_tests": [{
-		"id": 10,
+		"id": 9,
 		"date": "8.1.2023",
 		"result_link": "data/ekg_data/10_Ruhe.txt"
 	}]
