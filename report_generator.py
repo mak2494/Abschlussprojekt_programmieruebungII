@@ -42,15 +42,14 @@ def generate_pdf(
     if include_info:
         section_heading("Basisdaten")
 
-        if include_image and os.path.exists(person.picture_path):
+        if include_image and person.picture_path and os.path.exists(person.picture_path):
             try:
-                pdf.ln(5)
-                pdf.set_x((210 - 50) / 2)
-                pdf.image(person.picture_path, w=50)  # zentriert, ohne y-Wert
-                pdf.ln(10)
+                pdf.image(person.picture_path, x=70, y=pdf.get_y(), w=70)
+                pdf.ln(60)
             except RuntimeError:
-                pdf.set_text_color(200, 0, 0)
-                pdf.cell(0, 10, "⚠️ Bild konnte nicht geladen werden.", ln=True)
+                pdf.cell(200, 10, txt="⚠️ Bild konnte nicht geladen werden.", ln=True)
+        else:
+            pdf.cell(200, 10, txt="(Kein Bild verfügbar)", ln=True)
 
         pdf.set_text_color(0)
         pdf.cell(0, 10, f"Name: {person.firstname} {person.lastname}", ln=True)
