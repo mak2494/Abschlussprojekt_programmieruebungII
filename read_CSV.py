@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import plotly.io as pio
 import plotly.graph_objects as go
+from plotly.colors import qualitative
 pio.renderers.default = "browser"  # Plotly in Browser anzeigen
 
 ## zuvor pdm plotly
@@ -27,16 +28,36 @@ class CTG_Data:
 
         fig = go.Figure()
 
-        # Alle Spalten, die mit "LB" anfangen, finden
+        # Farbpalette für mehrere Linien
+        color_palette = qualitative.Set1  # oder Set2, Pastel1, etc.
         lb_columns = [col for col in self.df.columns if col.startswith('LB')]
 
-        # Jede LB-Spalte als eigene Linie plotten
-        for lb_col in lb_columns:
-            fig.add_trace(go.Scatter(x=self.df.index, y=self.df[lb_col], mode='lines', name=lb_col))
+        # LB-Spalten farbig darstellen
+        for i, lb_col in enumerate(lb_columns):
+            fig.add_trace(go.Scatter(
+                x=self.df.index,
+                y=self.df[lb_col],
+                mode='lines',
+                name=lb_col,
+                line=dict(color=color_palette[i % len(color_palette)])
+            ))
 
-        fig.add_trace(go.Scatter(x=self.df.index, y=self.df['UC'], mode='lines', name='UC'))
+        # UC-Kurve in grün gepunktet
+        if 'UC' in self.df.columns:
+            fig.add_trace(go.Scatter(
+                x=self.df.index,
+                y=self.df['UC'],
+                mode='lines',
+                name='UC',
+                line=dict(color='green', dash='dot')
+            ))
 
-        fig.update_layout(title=title, xaxis_title='Zeit', yaxis_title='Wert')
+        fig.update_layout(
+            title=title,
+            xaxis_title='Zeit',
+            yaxis_title='Wert',
+            template='simple_white'
+        )
 
         return fig
     
