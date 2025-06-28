@@ -73,7 +73,7 @@ with tab1:
                 new_firstname = st.text_input("Vorname", value=selected_person.firstname)
                 new_lastname = st.text_input("Nachname", value=selected_person.lastname)
                 new_gender = st.selectbox("Geschlecht", ["weiblich", "männlich"], index=0 if selected_person.gender == "weiblich" else 1)
-                new_birthyear = st.number_input("Geburtsjahr", value=int(selected_person.date_of_birth), step=1)
+                new_birthdate = st.date_input("Geburtsdatum", value=selected_person.date_of_birth)
                 new_pregnancies = st.number_input("Anzahl Schwangerschaften", value=selected_person.pregnancies, step=1)
                 new_fetuses = st.number_input("Anzahl Föten", value=selected_person.fetuses, step=1)
                 new_gest_age = st.number_input("Schwangerschaftswoche", value=selected_person.gestational_age_weeks, step=1)
@@ -86,7 +86,7 @@ with tab1:
                     selected_person_data["firstname"] = new_firstname
                     selected_person_data["lastname"] = new_lastname
                     selected_person_data["gender"] = new_gender
-                    selected_person_data["date_of_birth"] = str(new_birthyear)
+                    selected_person_data["date_of_birth"] = new_birthdate.isoformat()
                     selected_person_data["pregnancies"] = int(new_pregnancies)
                     selected_person_data["fetuses"] = int(new_fetuses)
                     selected_person_data["gestational_age_weeks"] = int(new_gest_age)
@@ -144,7 +144,7 @@ with tab3:
         new_firstname = st.text_input("Vorname")
         new_lastname = st.text_input("Nachname")
         new_gender = st.selectbox("Geschlecht", ["weiblich", "männlich", "divers"])
-        new_birthyear = st.number_input("Geburtsjahr", value=2000, step=1)
+        birth_date = st.date_input("Geburtsdatum")
         new_pregnancies = st.number_input("Anzahl Schwangerschaften", value=0, step=1)
         new_fetuses = st.number_input("Anzahl Föten", value=0, step=1)
         new_gest_age = st.number_input("Schwangerschaftswoche", value=0, step=1)
@@ -171,7 +171,7 @@ with tab3:
                     "firstname": new_firstname,
                     "lastname": new_lastname,
                     "gender": new_gender,
-                    "date_of_birth": str(new_birthyear),
+                    "date_of_birth": birth_date.isoformat(),
                     "pregnancies": int(new_pregnancies),
                     "fetuses": int(new_fetuses),
                     "gestational_age_weeks": int(new_gest_age),

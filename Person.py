@@ -13,7 +13,7 @@ class Fetus:
 
 class Person:
     def __init__(self, person_dict) -> None:
-        self.date_of_birth = person_dict["date_of_birth"]
+        self.date_of_birth = datetime.strptime(person_dict["date_of_birth"], "%Y-%m-%d")
         self.firstname = person_dict["firstname"]
         self.lastname = person_dict["lastname"]
         self.picture_path = person_dict["picture_path"]
@@ -33,8 +33,12 @@ class Person:
 
     # Berechnet das Alter der Person
     def calculate_age(self):
-        return datetime.today().year - int(self.date_of_birth)
-
+        today = datetime.today()
+        age = today.year - self.date_of_birth.year
+        if (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day):
+            age -= 1
+        return age
+    
     # Prüft, ob es eine Risikoschwangerschaft ist
     def is_high_risk_pregnancy(self):
         age = self.calculate_age()

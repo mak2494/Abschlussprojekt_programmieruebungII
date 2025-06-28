@@ -1,7 +1,7 @@
 [
     {
         "id": 4,
-        "date_of_birth": 1992,
+        "date_of_birth": "1992-05-14",
         "firstname": "Laura",
         "lastname": "Mueller",
         "picture_path": "data/pictures/Laura.png",
@@ -25,7 +25,7 @@
     },
     {
         "id": 5,
-        "date_of_birth": 1985,
+        "date_of_birth": "1985-01-08",
         "firstname": "Sofia",
         "lastname": "Klein",
         "picture_path": "data/pictures/Sofia.png",
@@ -44,7 +44,7 @@
     },
     {
         "id": 6,
-        "date_of_birth": 1978,
+        "date_of_birth": "1978-10-10",
         "firstname": "Miriam",
         "lastname": "Schneider",
         "picture_path": "data/pictures/Miriam.png",
@@ -63,7 +63,7 @@
     },
     {
         "id": 7,
-        "date_of_birth": 1990,
+        "date_of_birth": "1990-08-11",
         "firstname": "Nora",
         "lastname": "Becker",
         "picture_path": "data/pictures/Nora.png",
