@@ -43,8 +43,11 @@ with tab1:
 
         st.session_state.picture_path = selected_person.picture_path
 
-        image = Image.open(st.session_state.picture_path)
-        st.image(image, caption=f"{selected_person.firstname} {selected_person.lastname}")
+        if os.path.exists(st.session_state.picture_path):
+            image = Image.open(st.session_state.picture_path)
+            st.image(image, caption=f"{selected_person.firstname} {selected_person.lastname}")
+        else:
+            st.warning("⚠️ Kein Bild gefunden oder Pfad ungültig.")
 
         st.write(f"*ID:* {selected_person.id}")
         st.write(f"*Alter:* {selected_person.calculate_age()} Jahre")
