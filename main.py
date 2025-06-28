@@ -164,11 +164,17 @@ with tab3:
                 ctg_dir = "data/CTG_data"
                 os.makedirs(ctg_dir, exist_ok=True)
 
+                ctg_tests = []
                 if uploaded_csv is not None:
                     csv_path = os.path.join(ctg_dir, f"{new_id}.csv")
                     with open(csv_path, "wb") as f:
                         f.write(uploaded_csv.getbuffer())
 
+                    ctg_tests.append({
+                        "id": int(new_id),
+                        "date": datetime.now().strftime("%d.%m.%Y"),
+                        "result_link": csv_path
+                    })
                 new_person = {
                     "id": new_id,
                     "firstname": new_firstname,
@@ -180,7 +186,7 @@ with tab3:
                     "gestational_age_weeks": int(new_gest_age),
                     "medical_conditions": [s.strip() for s in new_medical_conditions.split(",") if s.strip()],
                     "picture_path": new_picture_path,
-                    "ekg_tests": []
+                    "CTG_tests": ctg_tests
                 }
 
                 person_list_data.append(new_person)
@@ -190,6 +196,9 @@ with tab3:
                 st.success(f"Neue Person {new_firstname} {new_lastname} gespeichert!")
                 if uploaded_csv is not None:
                     st.info(f"CSV gespeichert unter: {csv_path}")
+                # 🔁 App neu laden, damit die neue Person im Dropdown erscheint
+                st.rerun()
+
 
 with tab4:
     st.write("## 📄 Bericht erstellen")
