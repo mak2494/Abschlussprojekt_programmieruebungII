@@ -26,7 +26,7 @@ class CTG_Data:
         return self.df
 
 
-    def plotly_figure(self, title="CTG Data Over Time"):
+    def plotly_figure(self):
         if self.df is None:
             raise ValueError("CSV wurde noch nicht eingelesen. Bitte zuerst read_csv() aufrufen.")
 
@@ -72,7 +72,6 @@ class CTG_Data:
         ticks = list(range(0, maxs + 1, 10))  # 0, 10, 20, …, maxs
 
         fig.update_layout(
-            title=title,
             template='simple_white',
             hovermode='x unified',   # gemeinsames Hoverfenster
             dragmode='zoom',         # Zoom & Pan aktiv

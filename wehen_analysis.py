@@ -44,10 +44,11 @@ class WehenAnalysis:
 
         # 5) DataFrame zusammenbauen
         df = pd.DataFrame({
-            'time': peak_times,
-            'interval': intervals,
-            'duration': durations,
+            'Wehenzeitpunkt (min)': peak_times/60,
+            'Abstand zur vorherigen Wehe (s)': intervals,
+            'Wehendauer (s)': durations,
         })
+        df.reset_index(drop=True, inplace=True)  # Index entfernen
         return df
 
     def classify_contractions(self, df_peaks=None):
@@ -69,8 +70,8 @@ class WehenAnalysis:
         ]
 
         def assign_category(row):
-            iv = row['interval']
-            du = row['duration']
+            iv = row['Abstand zur vorherigen Wehe (s)']
+            du = row['Wehendauer (s)']
             for low_i, high_i, low_d, high_d, label in categories:
                 iv_ok = pd.isna(iv) or (iv >= low_i and iv < high_i)
                 if iv_ok and (du >= low_d and du < high_d):

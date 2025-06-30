@@ -7,6 +7,7 @@ import os
 from read_CSV import CTG_Data  # Deine CTG_Data-Klasse
 from wehen_analysis import WehenAnalysis
 from report_generator import generate_pdf
+from ctg_simulator import CTGSimulator
 import tempfile
 
 st.set_page_config(page_title="CTG APP")
@@ -14,8 +15,13 @@ st.set_page_config(page_title="CTG APP")
 # ---------------------------------------------
 # Tabs einrichten
 # ---------------------------------------------
-tab1, tab2, tab3, tab4 = st.tabs(["👤 Person anzeigen", "📊 CTG Auswertung", "➕ Neue Person anlegen", "📄 PDF-Bericht"])
-
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "👤 Person anzeigen",
+    "📊 CTG Auswertung",
+    "➕ Neue Person anlegen",
+    "📄 PDF-Bericht",
+    "▶️ Live-Simulation"
+])
 # ---------------------------------------------
 # Tab 1: Person anzeigen & bearbeiten
 # ---------------------------------------------
@@ -112,7 +118,7 @@ with tab2:
 
         if selected_person.fetuses_list:
             fetus_names = [f.name for f in selected_person.fetuses_list]
-            selected_fetus_name = st.selectbox("Fötus für CTG-Auswertung wählen:", options=fetus_names, key="ctg_fetus_select")
+            selected_fetus_name = st.selectbox("Fötus für HF-Auswertung wählen:", options=fetus_names, key="ctg_fetus_select")
         else:
             selected_fetus_name = None
 
@@ -125,19 +131,19 @@ with tab2:
             max_hr = ctg.max_HR_baby()
             min_hr = ctg.min_HR_baby()
 
-            st.write("### Herzfrequenz-Auswertung (LB)")
+            st.write("### Fötus-Herzfrequenz-Auswertung")
             st.metric("Durchschnittliche HF", f"{avg_hr:.1f} bpm")
             st.metric("Maximale HF", f"{max_hr:.1f} bpm")
             st.metric("Minimale HF", f"{min_hr:.1f} bpm")
 
-            st.write("### Verlauf der Herzfrequenz")
+            st.write("### CTG-Diagramm")
             st.plotly_chart(ctg.plotly_figure(), use_container_width=True)
 
              # --- WEHEN-ANALYSE ---
             st.write("### Wehen-Abstand und -Dauer")
             # Parameter mit Slidern einstellbar machen
             min_height = st.slider("Minimale UC-Höhe", 0.0, 50.0, 5.0, key="wehen_height")
-            min_distance = st.slider("Minimaler Abstand zwischen Wehen (s)", 30, 300, 120, key="wehen_distance")
+            min_distance = st.slider("Minimaler Abstand zwischen Wehen (s)", 5, 300, 120, key="wehen_distance")
 
             # Analyse-Objekt erzeugen
             wehen = WehenAnalysis(ctg)
@@ -145,7 +151,7 @@ with tab2:
             df_cat   = wehen.classify_contractions(df_peaks)
 
             st.subheader("Erkannte Wehen")
-            st.dataframe(df_cat)
+            st.dataframe(df_cat, hide_index=True)
 
             # Zusammenfassung: Anzahl pro Kategorie
             summary = df_cat['category'].value_counts().rename_axis('Kategorie').reset_index(name='Anzahl')
@@ -257,5 +263,55 @@ with tab4:
                         file_name=f"Bericht_{selected_person.firstname}_{selected_person.lastname}.pdf",
                         mime="application/pdf"
                     )
+ # Tab 5: Live-Simulation & Alarm
+# ---------------------------------------------
+with tab5:
+    st.title("▶️ CTG Live-Simulation")
+
+    if st.session_state.current_user in person_names:
+        # Person auswählen
+        selected_person_data = Person.find_person_data_by_name(st.session_state.current_user)
+        selected_person = Person(selected_person_data)
+
+        if not selected_person.CTG_tests:
+            st.warning("⚠️ Keine CTG-Dateien für diese Person hinterlegt.")
+        else:
+            # Fötus-Auswahl (falls vorhanden)
+            if selected_person.fetuses_list:
+                fetus_names = [f.name for f in selected_person.fetuses_list]
+                selected_fetus_name = st.selectbox(
+                    "Fötus wählen", options=fetus_names, key="sim_fetus_select"
+                )
+            else:
+                selected_fetus_name = None
+
+            # CTG-Dateipfad
+            selected_ctg_path = selected_person.CTG_tests[0]['result_link']
+
+
+            # CTG-Daten kurz laden, um die LB-Spalte zu bestimmen
+            ctg = CTG_Data(selected_ctg_path, fetus=selected_fetus_name)
+            ctg.read_csv()
+            lb_col = ctg.get_lb_column()
+
+            # Parameter-Einstellungen
+            bpm_thr = st.number_input(
+                "Alarm-Schwelle (bpm)", min_value=60, max_value=160, value=110, step=1
+            )
+            interval = st.select_slider(
+                "Simulationstempo (Sekunden pro Schritt)",
+                options=[0.1, 0.5, 1.0, 2.0],
+                value=1.0,
+                key="sim_speed"
+            )
+
+            # Simulator starten
+            simulator = CTGSimulator(
+                csv_path=selected_ctg_path,
+                lb_col=lb_col,
+                bpm_threshold=bpm_thr,
+                interval=interval
+            )
+            simulator.run()  # ruft intern run_live() auf
     else:
         st.info("Bitte im ersten Tab eine Person auswählen.")

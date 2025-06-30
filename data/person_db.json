@@ -57,7 +57,7 @@
             {
                 "id": 8,
                 "date": "12.2.2023",
-                "result_link": "data/CTG_data/CTG_twins_healthy.csv"
+                "result_link": "data/CTG_data/CTG_data3.csv"
             }
         ]
     },
@@ -76,7 +76,7 @@
             {
                 "id": 9,
                 "date": "8.1.2023",
-                "result_link": "data/CTG_data/CTG_data3.csv"
+                "result_link": "data/CTG_data/CTG_twins_healthy.csv"
             }
         ]
     }
