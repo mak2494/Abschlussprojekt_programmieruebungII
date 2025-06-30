@@ -5,6 +5,7 @@ from datetime import datetime
 import json
 import os
 from read_CSV import CTG_Data  # Deine CTG_Data-Klasse
+from wehen_analysis import WehenAnalysis
 from report_generator import generate_pdf
 import tempfile
 
@@ -131,10 +132,32 @@ with tab2:
 
             st.write("### Verlauf der Herzfrequenz")
             st.plotly_chart(ctg.plotly_figure(), use_container_width=True)
+
+             # --- WEHEN-ANALYSE ---
+            st.write("### Wehen-Abstand und -Dauer")
+            # Parameter mit Slidern einstellbar machen
+            min_height = st.slider("Minimale UC-Höhe", 0.0, 50.0, 5.0, key="wehen_height")
+            min_distance = st.slider("Minimaler Abstand zwischen Wehen (s)", 30, 300, 120, key="wehen_distance")
+
+            # Analyse-Objekt erzeugen
+            wehen = WehenAnalysis(ctg)
+            df_peaks = wehen.detect_contractions(height=min_height, distance=min_distance)
+            df_cat   = wehen.classify_contractions(df_peaks)
+
+            st.subheader("Erkannte Wehen")
+            st.dataframe(df_cat)
+
+            # Zusammenfassung: Anzahl pro Kategorie
+            summary = df_cat['category'].value_counts().rename_axis('Kategorie').reset_index(name='Anzahl')
+            st.subheader("Anzahl Wehen pro Kategorie")
+            st.table(summary)
+            # ------------------------
         else:
             st.warning("⚠️ Keine CTG-Dateien für diese Person hinterlegt.")
     else:
         st.info("Bitte im ersten Tab eine Person auswählen.")
+
+           
 
 # ---------------------------------------------
 # Tab 3: Neue Person anlegen
