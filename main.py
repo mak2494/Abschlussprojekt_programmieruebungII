@@ -149,8 +149,9 @@ with tab2:
 
              # --- WEHEN-ANALYSE ---
             st.write("### Wehen-Abstand und -Dauer")
+            st.write("###### Wehenstärke und -Abstand einstellen um festzulegen, welche Ausschläge im CTG als Wehen erkannt werden sollen.")
             # Parameter mit Slidern einstellbar machen
-            min_height = st.slider("Minimale UC-Höhe", 0.0, 50.0, 5.0, key="wehen_height")
+            min_height = st.slider("Minimale Wehenstärke", min_value=0, max_value=50, value=5, step=1, key="wehen_height")
             min_distance = st.slider("Minimaler Abstand zwischen Wehen (s)", 5, 300, 120, key="wehen_distance")
 
             # Analyse-Objekt erzeugen
@@ -162,7 +163,7 @@ with tab2:
             st.dataframe(df_cat, hide_index=True)
 
             # Zusammenfassung: Anzahl pro Kategorie
-            summary = df_cat['category'].value_counts().rename_axis('Kategorie').reset_index(name='Anzahl')
+            summary = df_cat['Wehenart'].value_counts().rename_axis('Kategorie').reset_index(name='Anzahl')
             st.subheader("Anzahl Wehen pro Kategorie")
             st.table(summary)
             # ------------------------

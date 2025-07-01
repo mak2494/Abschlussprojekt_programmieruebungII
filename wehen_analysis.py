@@ -45,8 +45,8 @@ class WehenAnalysis:
         # 5) DataFrame zusammenbauen
         df = pd.DataFrame({
             'Wehenzeitpunkt (min)': peak_times/60,
-            'Abstand zur vorherigen Wehe (s)': intervals,
-            'Wehendauer (s)': durations,
+            'Abstand zur vorherigen Wehe (min)': intervals/60,
+            'Wehendauer (min)': durations/60,
         })
         df.reset_index(drop=True, inplace=True)  # Index entfernen
         return df
@@ -54,13 +54,13 @@ class WehenAnalysis:
     def classify_contractions(self, df_peaks=None):
         """
         Klassifiziert jede Wehe in df_peaks nach Abstand und Dauer gemäß Tabelle.
-        Rückgabe: df_peaks mit zusätzlicher Spalte 'category'.
+        Rückgabe: df_peaks mit zusätzlicher Spalte 'Wehenart'.
         """
         if df_peaks is None:
             df_peaks = self.detect_contractions()
 
         # Kategorien: (interval_low, interval_high, dur_low, dur_high, label)
-        categories = [
+        Wehenart = [
             (    0,   np.inf,     10,    30, "Braxton-Hicks-Wehen"),
             (    0,   np.inf,      0,    10, "Senkwehen"),
             (  600,  1200,    30,    45, "Vor-/Eröffnungswehen"),
@@ -70,14 +70,14 @@ class WehenAnalysis:
         ]
 
         def assign_category(row):
-            iv = row['Abstand zur vorherigen Wehe (s)']
-            du = row['Wehendauer (s)']
-            for low_i, high_i, low_d, high_d, label in categories:
+            iv = row['Abstand zur vorherigen Wehe (min)']
+            du = row['Wehendauer (min)']
+            for low_i, high_i, low_d, high_d, label in Wehenart:
                 iv_ok = pd.isna(iv) or (iv >= low_i and iv < high_i)
                 if iv_ok and (du >= low_d and du < high_d):
                     return label
             return "Unklassifiziert"
 
         df = df_peaks.copy()
-        df['category'] = df.apply(assign_category, axis=1)
+        df['Wehenart'] = df.apply(assign_category, axis=1)
         return df
