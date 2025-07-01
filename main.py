@@ -104,10 +104,43 @@ with tab1:
                     selected_person_data["medical_conditions"] = [s.strip() for s in new_medical_conditions.split(",") if s.strip()]
                     selected_person_data["picture_path"] = new_picture_path
 
+            # 📁 Neue CTG-Dateien speichern und anhängen
+                    if uploaded_csvs:
+                        ctg_dir = "data/CTG_data"
+                        os.makedirs(ctg_dir, exist_ok=True)
+
+                        if "CTG_tests" not in selected_person_data:
+                            selected_person_data["CTG_tests"] = []
+
+                        existing_ids = [test["id"] for test in selected_person_data["CTG_tests"]]
+                        next_ctg_id = max(existing_ids, default=100) + 1
+
+                        for file in uploaded_csvs:
+                            filename = f"{selected_person_data['id']}_CTG_{next_ctg_id}.csv"
+                            file_path = os.path.join(ctg_dir, filename)
+                            with open(file_path, "wb") as f:
+                                f.write(file.getbuffer())
+
+                            selected_person_data["CTG_tests"].append({
+                                "id": next_ctg_id,
+                                "date": datetime.now().strftime("%d.%m.%Y"),
+                                "result_link": file_path
+                            })
+                            next_ctg_id += 1
+
+            # ✅ Änderungen in person_list_data zurückspeichern
+                    for idx, person in enumerate(person_list_data):
+                        if person["id"] == selected_person_data["id"]:
+                            person_list_data[idx] = selected_person_data
+                            break    
+
                     with open("data/person_db.json", "w") as f:
                         json.dump(person_list_data, f, indent=4)
 
-                    st.success("Änderungen gespeichert! Bitte neu auswählen, um sie zu sehen.")
+                        st.success("Änderungen gespeichert!")
+                        st.rerun()
+
+                
 
 # ---------------------------------------------
 # Tab 2: CTG Auswertung
