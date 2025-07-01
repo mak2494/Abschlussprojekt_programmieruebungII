@@ -12,6 +12,10 @@ from read_CSV import CTG_Data
 from plotly.colors import qualitative
 from wehen_analysis import WehenAnalysis
 import pandas as pd
+import plotly.io as pio
+
+# Optional: sichere Start-Parameter für headless Chrome
+pio.kaleido.scope.chromium_args = ["--no-sandbox", "--disable-dev-shm-usage"]
 
 class PDF(FPDF):
     """
