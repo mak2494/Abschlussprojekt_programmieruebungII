@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 from Person import Person  # Deine bestehende Person-Klasse
-from datetime import datetime
+from datetime import date, datetime
 import json
 import os
 from read_CSV import CTG_Data  # Deine CTG_Data-Klasse
@@ -204,8 +204,6 @@ with tab2:
     else:
         st.info("Bitte im ersten Tab eine Person auswählen.")
 
-           
-
 # ---------------------------------------------
 # Tab 3: Neue Person anlegen
 # ---------------------------------------------
@@ -217,12 +215,16 @@ with tab3:
         new_firstname = st.text_input("Vorname")
         new_lastname = st.text_input("Nachname")
         new_gender = st.selectbox("Geschlecht", ["weiblich", "männlich", "divers"])
-        birth_date = st.date_input("Geburtsdatum")
+        birth_date = st.date_input(
+            "Geburtsdatum",
+            min_value=date(1950, 1, 1),
+            max_value=date.today()
+        )
         new_pregnancies = st.number_input("Anzahl Schwangerschaften", value=0, step=1)
         new_fetuses = st.number_input("Anzahl Föten", value=0, step=1)
         new_gest_age = st.number_input("Schwangerschaftswoche", value=0, step=1)
         new_medical_conditions = st.text_area("Vorerkrankungen (Komma-getrennt)")
-        new_picture_path = st.text_input("Bildpfad", value="data/pictures/none.png")
+        uploaded_img = st.file_uploader("Profilbild hochladen (PNG)", type=["png"])
         uploaded_csvs = st.file_uploader("CTG-Dateien hochladen (mehrere möglich)", type=["csv"], accept_multiple_files=True)
 
         add_btn = st.form_submit_button("Neue Person speichern")
@@ -231,10 +233,14 @@ with tab3:
             if any(p["id"] == new_id for p in person_list_data):
                 st.error("ID existiert bereits!")
             else:
-                ctg_dir = "data/CTG_data"
-                os.makedirs(ctg_dir, exist_ok=True)
+                new_picture_path = "data/pictures/none.png"
+                if uploaded_img:
+                    new_picture_path = os.path.join("data/pictures", f"{new_id}.png")
+                    with open(new_picture_path, "wb") as f:
+                        f.write(uploaded_img.getbuffer())
 
                 ctg_tests = []
+                ctg_dir = "data/CTG_data" 
                 for idx, uploaded_csv in enumerate(uploaded_csvs):
                     csv_path = os.path.join(ctg_dir, f"{new_id}_ctg_{idx + 1}.csv")
                     with open(csv_path, "wb") as f:
@@ -264,9 +270,10 @@ with tab3:
                     json.dump(person_list_data, f, indent=4)
 
                 st.success(f"Neue Person {new_firstname} {new_lastname} gespeichert!")
-                if uploaded_csvs is not None:
-                    st.info(f"{len(uploaded_csvs)} CSV-Datei(en) gespeichert.")
-                # 🔁 App neu laden, damit die neue Person im Dropdown erscheint
+                if uploaded_csvs:
+                    st.info(f"{len(uploaded_csvs)} CTG-Datei(en) gespeichert.")
+                if uploaded_img:
+                    st.info("Profilbild erfolgreich gespeichert.")
                 st.rerun()
 
 
