@@ -180,16 +180,16 @@ def generate_pdf(
                 pdf.cell(40, 8, "Zeitpunkt (min)", border=1)
                 pdf.cell(50, 8, "Abstand (s)", border=1)
                 pdf.cell(40, 8, "Dauer (s)", border=1)
-                pdf.cell(60, 8, "Kategorie", border=1)
+                pdf.cell(60, 8, "Wehenart", border=1)
                 pdf.ln()
 
                 pdf.set_font("Arial", size=9)
                 for _, row in df_cat.iterrows():
                     pdf.cell(40, 8, f"{row['Wehenzeitpunkt (min)']:.2f}", border=1)
-                    abstand = f"{row['Abstand zur vorherigen Wehe (s)']:.1f}" if pd.notna(row['Abstand zur vorherigen Wehe (s)']) else "-"
+                    abstand = f"{row['Abstand zur vorherigen Wehe (min)']:.1f}" if pd.notna(row['Abstand zur vorherigen Wehe (min)']) else "-"
                     pdf.cell(50, 8, abstand, border=1)
-                    pdf.cell(40, 8, f"{row['Wehendauer (s)']:.1f}", border=1)
-                    pdf.cell(60, 8, row['category'], border=1)
+                    pdf.cell(40, 8, f"{row['Wehendauer (min)']:.1f}", border=1)
+                    pdf.cell(60, 8, row['Wehenart'], border=1)
                     pdf.ln()
 
                 pdf.ln(5)
@@ -200,9 +200,9 @@ def generate_pdf(
                 pdf.ln()
 
                 pdf.set_font("Arial", size=9)
-                summary = df_cat['category'].value_counts().rename_axis('Kategorie').reset_index(name='Anzahl')
+                summary = df_cat['Wehenart'].value_counts().rename_axis('Kategorie').reset_index(name='Anzahl')
                 for _, row in summary.iterrows():
-                    pdf.cell(100, 8, row['Kategorie'], border=1)
+                    pdf.cell(100, 8, str(row['Kategorie']), border=1)
                     pdf.cell(40, 8, str(row['Anzahl']), border=1)
                     pdf.ln()
     
