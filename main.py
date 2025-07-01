@@ -216,7 +216,7 @@ with tab2:
         else:
             st.warning("⚠️ Keine CTG-Dateien für diese Person hinterlegt.")
     else:
-        st.info("Bitte im ersten Tab eine Person auswählen.")
+        st.info("Bitte links im Menü eine Person auswählen.")
 
 # ---------------------------------------------
 # Tab 3: Neue Person anlegen
@@ -369,7 +369,7 @@ with tab4:
                         mime="application/pdf"
                     )
     else:
-        st.info("Bitte im ersten Tab eine Person auswählen.")
+        st.info("Bitte links im Menü eine Person auswählen.")
 
 #----------------------------------------------
 # Tab 5: Live-Simulation & Alarm
@@ -379,7 +379,7 @@ with tab5:
 
     # 1) Vorbedingungen
     if st.session_state.current_user not in person_names:
-        st.info("Bitte im ersten Tab eine Person auswählen.")
+        st.info("Bitte links im Menü eine Person auswählen.")
         st.stop()
     person_data = Person.find_person_data_by_name(st.session_state.current_user)
     if not person_data["CTG_tests"]:
