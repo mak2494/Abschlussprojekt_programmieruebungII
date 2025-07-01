@@ -1,7 +1,7 @@
 
 # 🩺 CTG APP – Analyse & Verwaltung von Schwangerschaftsdaten
 
-Dies ist eine interaktive **Streamlit-Webanwendung**, mit der Schwangerschaftsdaten erfasst, visualisiert und ausgewertet werden können. Ein besonderes Augenmerk liegt dabei auf **CTG-Daten** (Kardiotokografie), die zur Überwachung der fetalen Herzfrequenz verwendet werden.
+Dies ist eine interaktive **Streamlit-Webanwendung**, mit der Schwangerschaftsdaten erfasst, visualisiert und ausgewertet werden können. Ein besonderes Augenmerk liegt dabei auf **CTG-Daten** (Kardiotokografie), die zur Überwachung der fötalen Herzfrequenz und Wehenaktivität verwendet werden.
 
 ---
 
@@ -14,11 +14,12 @@ Dies ist eine interaktive **Streamlit-Webanwendung**, mit der Schwangerschaftsda
 - Erkennung von **Risikopatientinnen** (z. B. Mehrlingsschwangerschaft, Bluthochdruck, Alter > 35)
 
 ### 📊 CTG-Auswertung
-- Anzeige von Herzfrequenzstatistiken (Durchschnitt, Minimum, Maximum)
-- Liniendiagramm der Herzfrequenz über Zeit
+- Anzeige von fötalen Herzfrequenzstatistiken (Durchschnitt, Minimum, Maximum)
+- interaktives Liniendiagramm der Herzfrequenz und Wehenaktivität (Uterine Contractions) über Zeit
 - Unterscheidung von mehreren Föten durch farbige Linien
-- Optional: UC-Kurve (Wehenaktivität)
-- Wehenanalyse mit Kategorisierung (leicht / mittel / stark)
+- Wehenanalyse mit Kategorisierung
+- Einstellbare Wehenstärke und -Abstände für individuell auf Patientinnen angepasste Kategorisierung (Einstellung bestimmen welche Peaks als Wehen erkannt werden)
+
 
 ### ➕ Neue Personen anlegen
 - Erfassung neuer Patientendaten inkl. Profilbild, Vorerkrankungen und Geburtsdatum (ab 1950)
@@ -31,8 +32,11 @@ Dies ist eine interaktive **Streamlit-Webanwendung**, mit der Schwangerschaftsda
 - Download als PDF-Datei mit eingebettetem Bild und Diagramm
 
 ### ▶️ Live-Simulation
-- CTG-Daten in Echtzeit mit konfigurierbarem Alarm (Herzfrequenzgrenze)
-- Auswahl eines Fötus und Simulationstempo
+- Herzfrequenz-Daten eines Fötus in Echtzeit simulieren mit konfigurierbarem Alarm (Herzfrequenzgrenze)
+- Auswahl eines Fötus
+- Auswahl eines Simulationstempos (Standard Einstellung ist 0.1s/Schritt für relativ flüssige Darstellung)
+-  Standard Alarm Einstellung bei 110bpm (klinisch relevanter Wert) für Testung wird jedoch empfohlen 145bpm einzustellen 
+- Dient als Vorschau für mögliche Live-Anschlüsse eines CTG-Geräts
 
 ---
 
@@ -63,8 +67,8 @@ Ein gültiges Beispiel enthält z. B.:
 
 ```csv
 time,LB,UC
-2025-01-01 08:00:00,140,20
-2025-01-01 08:00:05,138,19
+1,140,20
+2,138,19
 ...
 
 ---
