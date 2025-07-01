@@ -2,7 +2,7 @@ import os
 import tempfile
 from fpdf import FPDF
 from read_CSV import CTG_Data
-
+from plotly.colors import qualitative
 
 class PDF(FPDF):
     def header(self):
@@ -88,21 +88,14 @@ def generate_pdf(
 
         # 📈 Diagramm einfügen
         if include_ctg_plot:
-            fig = ctg.plotly_figure(title="CTG Verlauf")
-
-            # 🟦 Farben explizit setzen
-            for trace in fig.data:
-                if trace.name == "LB":
-                    trace.line.color = "blue"
-                elif trace.name == "UC":
-                    trace.line.color = "green"
+            fig = ctg.plotly_figure()  # 🔁 Kein title mehr erlaubt
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpimg:
                 fig.write_image(tmpimg.name, width=700, height=300)
                 pdf.add_page()
                 section_heading("CTG-Diagramm")
                 pdf.ln(5)
-                pdf.image(tmpimg.name, x=10, w=190)  # Kein y → automatische Position
+                pdf.image(tmpimg.name, x=10, w=190)
 
     elif include_ctg:
         section_heading("CTG-Auswertung")
