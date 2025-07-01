@@ -128,7 +128,11 @@ class CTG_Data:
 
     
     def get_lb_column(self):
-        """Ermittelt die passende Spalte für die fetale Herzfrequenz (LB) basierend auf dem Fötus"""
+      """Ermittelt die passende Spalte für die fetale Herzfrequenz (LB) basierend auf dem Fötus"""
+        # Wenn das DataFrame noch nicht geladen wurde, lade es jetzt:
+        if self.df is None:
+            self.read_csv()
+       
         if self.fetus is None:
         # Kein Fötus angegeben – versuche LB, LB1, LB2 der Reihe nach
             for col in ['LB', 'LB1', 'LB2']:
