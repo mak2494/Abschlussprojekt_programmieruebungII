@@ -11,22 +11,35 @@ import plotly.express as px
 
 
 class CTG_Data:
+    """
+    Eine Klasse zur Analyse und Visualisierung von CTG-Daten (Cardiotokographie).
+
+    Attributes:
+        filepath (str): Pfad zur CSV-Datei mit den CTG-Daten.
+        df (pd.DataFrame): Eingelesene CTG-Daten.
+        fetus (str or object): Optionaler Fötus-Name oder -Objekt zur Auswahl der richtigen LB-Spalte.
+    """
     def __init__(self, filepath, fetus=None):
+        """
+        Initialisiert die CTG_Data-Instanz mit Dateipfad und optionalem Fötus.
+
+        """
         self.filepath = filepath
         self.df = None
-        self.fetus = fetus  # Verknüpfter Fötus (optional)
+        self.fetus = fetus  
     def read_csv(self):
-        # Liest die CSV-Datei ein und verwendet die Spalte 'time' als Index.
+        """Liest die CTG-Daten aus der CSV-Datei ein und konvertiert den Zeitindex in Timedelta """
     
         self.df = pd.read_csv(
             self.filepath, 
             index_col='time', 
             parse_dates=False)
-        self.df.index = pd.to_timedelta(self.df.index, unit='s')  # Konvertiert Zeit in Timedelta
+        self.df.index = pd.to_timedelta(self.df.index, unit='s')  
         return self.df
 
 
-    def plotly_figure(self, time_range=None):
+    def plotly_figure(self, time_range=None, show_rangeslider=True):
+        """ Erstellt eine interaktive Plotly-Grafik mit Herzfrequenz (LB) und Wehentätigkeit (UC)"""
         if self.df is None:
             raise ValueError("CSV wurde noch nicht eingelesen. Bitte zuerst read_csv() aufrufen.")
 
@@ -90,7 +103,7 @@ class CTG_Data:
                 gridcolor='lightgrey',
                 ticks='outside',
                 range=[ticks[0], ticks[-1]] if ticks else None,
-                rangeslider=dict(visible=True),
+                rangeslider=dict(visible=show_rangeslider),
                 type='linear'
             ),
             yaxis=dict(
@@ -115,11 +128,11 @@ class CTG_Data:
 
     
     def get_lb_column(self):
+      """Ermittelt die passende Spalte für die fetale Herzfrequenz (LB) basierend auf dem Fötus"""
         # Wenn das DataFrame noch nicht geladen wurde, lade es jetzt:
         if self.df is None:
             self.read_csv()
-        # Prüfe, ob die Spalte LB, LB1 oder LB2 existiert
-      
+       
         if self.fetus is None:
         # Kein Fötus angegeben – versuche LB, LB1, LB2 der Reihe nach
             for col in ['LB', 'LB1', 'LB2']:
@@ -146,14 +159,17 @@ class CTG_Data:
 
 
     def average_HR_baby(self):
+        """Berechnet die durchschnittliche Herzfrequenz des Babys basierend auf der LB-Spalte."""
         lb_col = self.get_lb_column()
         return self.df[lb_col].mean()
 
     def max_HR_baby(self):
+        """Berechnet die maximale Herzfrequenz des Babys basierend auf der LB-Spalte."""
         lb_col = self.get_lb_column()
         return self.df[lb_col].max()
 
     def min_HR_baby(self):
+        """Berechnet die minimale Herzfrequenz des Babys basierend auf der LB-Spalte."""
         lb_col = self.get_lb_column()
         return self.df[lb_col].min()
     

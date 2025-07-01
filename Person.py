@@ -3,16 +3,21 @@ from datetime import datetime
 
 
 class Fetus:
+    """Repräsentiert einen Fötus mit Name und Schwangerschaftswoche"""
     def __init__(self, name, gestational_age_weeks):
+        """Initialisiert einen Fötus mit Namen und Schwangerschaftswoche"""
         self.name = name
         self.gestational_age_weeks = gestational_age_weeks
 
     def __str__(self):
+        """Gibt eine lesbare Darstellung des Fötus zurück"""
         return f"Fötus: {self.name}, Schwangerschaftswoche: {self.gestational_age_weeks}"
 
 
 class Person:
+    """Repräsentiert eine schwangere Person mit medizinischen und persönlichen Daten"""
     def __init__(self, person_dict) -> None:
+        """ Initialisiert ein Person-Objekt basierend auf einem Dictionary aus JSON-Daten"""
         self.date_of_birth = datetime.strptime(person_dict["date_of_birth"], "%Y-%m-%d")
         self.firstname = person_dict["firstname"]
         self.lastname = person_dict["lastname"]
@@ -31,16 +36,18 @@ class Person:
             fetus = Fetus(name=f"Fötus {i}", gestational_age_weeks=self.gestational_age_weeks)
             self.fetuses_list.append(fetus)
 
-    # Berechnet das Alter der Person
+    
     def calculate_age(self):
+        """Berechnet das Alter der Person basierend auf dem Geburtsdatum"""
         today = datetime.today()
         age = today.year - self.date_of_birth.year
         if (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day):
             age -= 1
         return age
     
-    # Prüft, ob es eine Risikoschwangerschaft ist
+
     def is_high_risk_pregnancy(self):
+        """Bestimmt, ob es sich um eine Risikoschwangerschaft handelt"""
         age = self.calculate_age()
         risk_conditions = ["Bluthochdruck", "Diabetes Typ 2"]
 
@@ -53,12 +60,14 @@ class Person:
                 return True
         return False
 
-    # Pfad zum Bild der Person zurückgeben
+    
     def get_picture_path(self):
+        """Gibt den Pfad zum Bild der Person zurück"""
         return self.picture_path
 
     @staticmethod
     def load_by_id(person_id):
+        """Lädt eine Person basierend auf der ID aus der JSON-Datenbank"""
         person_data = Person.load_person_data()
         for person in person_data:
             if person["id"] == person_id:
@@ -67,16 +76,19 @@ class Person:
 
     @staticmethod
     def load_person_data():
+        """Lädt die Personendaten aus der JSON-Datei"""
         with open("data/person_db.json") as file:
             person_data = json.load(file)
         return person_data
 
     @staticmethod
     def get_person_list(person_data):
+        """Erstellt eine Liste von Personennamen im Format 'Nachname, Vorname'"""
         return [f"{p['lastname']}, {p['firstname']}" for p in person_data]
 
     @staticmethod
     def find_person_data_by_name(suchstring):
+        """Findet die Personendaten basierend auf dem Namen im Format 'Nachname, Vorname'"""
         person_data = Person.load_person_data()
         if suchstring == "None":
             return {}

@@ -18,31 +18,40 @@ Dies ist eine interaktive **Streamlit-Webanwendung**, mit der Schwangerschaftsda
 - Liniendiagramm der Herzfrequenz über Zeit
 - Unterscheidung von mehreren Föten durch farbige Linien
 - Optional: UC-Kurve (Wehenaktivität)
+- Wehenanalyse mit Kategorisierung (leicht / mittel / stark)
 
 ### ➕ Neue Personen anlegen
-- Erfassung neuer Patientendaten inkl. Bild, Vorerkrankungen und Geburtsdatum
-- Upload von CTG-Daten (CSV-Dateien)
+- Erfassung neuer Patientendaten inkl. Profilbild, Vorerkrankungen und Geburtsdatum (ab 1950)
+- Upload von CTG-Daten (mehrere CSV-Dateien möglich)
 - Automatische Speicherung der Daten in einer JSON-Datenbank
 
 ### 📄 PDF-Bericht generieren
-- Wahlweise mit Basisdaten, Risikoeinschätzung, CTG-Auswertung, Bild & Diagramm
-- Automatischer PDF-Export zum Download
+- Auswahl der Inhalte (Basisdaten, Risikoeinschätzung, CTG-Daten, Wehenanalyse etc.)
+- Eingrenzung des CTG-Zeitraums möglich
+- Download als PDF-Datei mit eingebettetem Bild und Diagramm
+
+### ▶️ Live-Simulation
+- CTG-Daten in Echtzeit mit konfigurierbarem Alarm (Herzfrequenzgrenze)
+- Auswahl eines Fötus und Simulationstempo
 
 ---
 
 ## 🗂️ Projektstruktur
-
 ```
 Abschlussprojekt_programmieruebungII/
 │
-├── main.py                     # Haupt-Skript mit Streamlit-Interface
-├── Person.py                  # Personen- & Fötus-Klassen
-├── read_CSV.py                # CTG-Daten-Klasse mit Visualisierung & Statistik
-├── report_generator.py        # PDF-Erzeugung mit fpdf
+├── main.py # Haupt-Skript mit Streamlit-Interface
+├── Person.py # Personen- & Fötus-Klassen
+├── read_CSV.py # CTG-Daten-Klasse mit Visualisierung & Statistik
+├── report_generator.py # PDF-Erzeugung mit fpdf
+├── wehen_analysis.py # Logik zur Wehenanalyse
+├── ctg_simulator.py # Live-Simulation der CTG-Werte
+│
 ├── data/
-│   ├── person_db.json         # Datenbank mit Versuchspersonen
-│   ├── pictures/              # Bilder der Versuchspersonen
-│   └── CTG_data/              # CTG-CSV-Dateien
+│ ├── person_db.json # JSON-Datenbank mit Versuchspersonen
+│ ├── pictures/ # Profilbilder als PNG
+│ └── CTG_data/ # Hochgeladene CTG-CSV-Dateien
+│
 └── ...
 ```
 
@@ -51,15 +60,12 @@ Abschlussprojekt_programmieruebungII/
 ## 💾 Beispiel-CSV
 
 Ein gültiges Beispiel enthält z. B.:
+
 ```csv
 time,LB,UC
 2025-01-01 08:00:00,140,20
 2025-01-01 08:00:05,138,19
 ...
-```
-
-- `LB`: Herzfrequenz eines Fötus (oder `LB1`, `LB2` bei mehreren)
-- `UC`: Wehenaktivität (optional)
 
 ---
 
@@ -87,17 +93,23 @@ time,LB,UC
 
 - `streamlit`
 - `fpdf`
-- `pandas`, `numpy`
+- `pandas` 
+- `numpy`
 - `plotly`
-- `kaleido` (für Diagramm-Export in PDF)
+- `kaleido`
+- `scipy`
+- `nbformat`
 
 ---
 
 ## 📌 Hinweise
 
-- Die App speichert neue Personen persistent in `data/person_db.json`.
-- Wenn keine CTG-Datei oder kein Bild hochgeladen wird, wird dies automatisch behandelt.
-- Für vollständige Funktionalität sollte die CSV-Datei die erwarteten Spalten enthalten (`LB`, `UC`).
+- Die Anwendung speichert alle Daten **lokal** im Verzeichnis `data/`.
+- Die App ist **nicht für den klinischen Einsatz geeignet**, sondern dient ausschließlich zu **Lern- und Analysezwecken**.
+- Es wird empfohlen, die Anwendung im **Chrome-Browser** zu nutzen, da nur dieser vollständig unterstützt wird.
+- Die JSON-Datei `data/person_db.json` wird beim Anlegen oder Bearbeiten **dauerhaft verändert**.
+- CTG-Dateien müssen das Format mit den Spaltennamen `time`, `LB`, `UC` einhalten.  
+  Weitere Spalten wie `LB1`, `LB2` für Mehrlingsschwangerschaften werden ebenfalls unterstützt.
 
 ---
 
@@ -109,6 +121,6 @@ time,LB,UC
 
 ## 👩‍💻 Entwickelt im Rahmen des Moduls „Programmierübungen 2“
 
-- 💼 Hochschule XY
-- 👩‍🔬 Studierende: *Dein Name hier*
-- 📅 Sommersemester 2025
+- 💼 Management Center Innsbruck
+- 👩‍🔬 Studierende: Marie Köhl und Hannah Kleutgens
+- 📅 Sommersemester 2025 MGST

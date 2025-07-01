@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 from Person import Person  # Deine bestehende Person-Klasse
-from datetime import datetime
+from datetime import date, datetime
 import json
 import os
 from read_CSV import CTG_Data  # Deine CTG_Data-Klasse
@@ -17,6 +17,23 @@ from streamlit.runtime.scriptrunner import RerunException
 
 st.set_page_config(page_title="CTG APP")
 
+# -------------------------------
+# Globale Personenauswahl in Sidebar
+# -------------------------------
+with st.sidebar:
+    st.markdown("### 👤 Versuchsperson wählen")
+
+    person_list_data = Person.load_person_data()
+    person_names = Person.get_person_list(person_list_data)
+
+    if "current_user" not in st.session_state:
+        st.session_state.current_user = "None"
+
+    st.session_state.current_user = st.selectbox(
+        "Versuchsperson",
+        options=["None"] + person_names,
+        index=(["None"] + person_names).index(st.session_state.current_user)
+    )
 # ---------------------------------------------
 # Tabs einrichten
 # ---------------------------------------------
@@ -27,24 +44,16 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📄 PDF-Bericht",
     "▶️ Live-Simulation"
 ])
-# ---------------------------------------------
+#----------------------------------------------
 # Tab 1: Person anzeigen & bearbeiten
 # ---------------------------------------------
 with tab1:
     st.title("CTG APP")
-    st.write("## Versuchsperson auswählen")
-
-    person_list_data = Person.load_person_data()
-    person_names = Person.get_person_list(person_list_data)
-
-    if 'current_user' not in st.session_state:
-        st.session_state.current_user = 'None'
-
-    st.session_state.current_user = st.selectbox(
-        'Versuchsperson',
-        options=['None'] + person_names,
-        key="sbVersuchsperson"
-    )
+    if st.session_state.current_user in person_names:
+        selected_person_data = Person.find_person_data_by_name(st.session_state.current_user)
+        selected_person = Person(selected_person_data)
+    else:
+        st.info("Bitte links im Menü eine Versuchsperson auswählen.")
 
     if 'picture_path' not in st.session_state:
         st.session_state.picture_path = 'data/pictures/none.png'
@@ -83,6 +92,7 @@ with tab1:
         else:
             st.info("Keine Föten vorhanden.")
 
+
         with st.expander("🔧 Person bearbeiten"):
             with st.form("edit_person_form"):
                 new_firstname = st.text_input("Vorname", value=selected_person.firstname)
@@ -94,6 +104,7 @@ with tab1:
                 new_gest_age = st.number_input("Schwangerschaftswoche", value=selected_person.gestational_age_weeks, step=1)
                 new_medical_conditions = st.text_area("Vorerkrankungen (Komma-getrennt)", value=", ".join(selected_person.medical_conditions))
                 new_picture_path = st.text_input("Bildpfad", value=selected_person.picture_path)
+                uploaded_csvs = st.file_uploader("Weitere CTG-Dateien hochladen", type=["csv"], accept_multiple_files=True)
 
                 save_btn = st.form_submit_button("Änderungen speichern")
 
@@ -108,11 +119,42 @@ with tab1:
                     selected_person_data["medical_conditions"] = [s.strip() for s in new_medical_conditions.split(",") if s.strip()]
                     selected_person_data["picture_path"] = new_picture_path
 
+            # 📁 Neue CTG-Dateien speichern und anhängen
+                    if uploaded_csvs:
+                        ctg_dir = "data/CTG_data"
+                        os.makedirs(ctg_dir, exist_ok=True)
+
+                        if "CTG_tests" not in selected_person_data:
+                            selected_person_data["CTG_tests"] = []
+
+                        existing_ids = [test["id"] for test in selected_person_data["CTG_tests"]]
+                        next_ctg_id = max(existing_ids, default=100) + 1
+
+                        for file in uploaded_csvs:
+                            filename = f"{selected_person_data['id']}_CTG_{next_ctg_id}.csv"
+                            file_path = os.path.join(ctg_dir, filename)
+                            with open(file_path, "wb") as f:
+                                f.write(file.getbuffer())
+
+                            selected_person_data["CTG_tests"].append({
+                                "id": next_ctg_id,
+                                "date": datetime.now().strftime("%d.%m.%Y"),
+                                "result_link": file_path
+                            })
+                            next_ctg_id += 1
+
+            # ✅ Änderungen in person_list_data zurückspeichern
+                    for idx, person in enumerate(person_list_data):
+                        if person["id"] == selected_person_data["id"]:
+                            person_list_data[idx] = selected_person_data
+                            break    
+
                     with open("data/person_db.json", "w") as f:
                         json.dump(person_list_data, f, indent=4)
 
-                    st.success("Änderungen gespeichert! Bitte neu auswählen, um sie zu sehen.")
-
+                        st.success("Änderungen gespeichert!")
+                        st.rerun()
+           
 # ---------------------------------------------
 # Tab 2: CTG Auswertung
 # ---------------------------------------------
@@ -131,7 +173,11 @@ with tab2:
             st.session_state.selected_fetus_name = None
 
         if selected_person.CTG_tests:
-            selected_ctg_path = selected_person.CTG_tests[0]['result_link']
+            ctg_labels = [test["date"] for test in selected_person.CTG_tests]
+            selected_ctg_index = st.selectbox("CTG-Datum wählen:", options=range(len(ctg_labels)), format_func=lambda i: ctg_labels[i])
+            st.session_state.selected_ctg_index = selected_ctg_index  # 👉 für Tab4/PDF merken
+
+            selected_ctg_path = selected_person.CTG_tests[selected_ctg_index]['result_link']
             ctg = CTG_Data(selected_ctg_path, fetus=selected_fetus_name)
             ctg.read_csv()
 
@@ -172,8 +218,6 @@ with tab2:
     else:
         st.info("Bitte im ersten Tab eine Person auswählen.")
 
-           
-
 # ---------------------------------------------
 # Tab 3: Neue Person anlegen
 # ---------------------------------------------
@@ -185,13 +229,17 @@ with tab3:
         new_firstname = st.text_input("Vorname")
         new_lastname = st.text_input("Nachname")
         new_gender = st.selectbox("Geschlecht", ["weiblich", "männlich", "divers"])
-        birth_date = st.date_input("Geburtsdatum")
+        birth_date = st.date_input(
+            "Geburtsdatum",
+            min_value=date(1950, 1, 1),
+            max_value=date.today()
+        )
         new_pregnancies = st.number_input("Anzahl Schwangerschaften", value=0, step=1)
         new_fetuses = st.number_input("Anzahl Föten", value=0, step=1)
         new_gest_age = st.number_input("Schwangerschaftswoche", value=0, step=1)
         new_medical_conditions = st.text_area("Vorerkrankungen (Komma-getrennt)")
-        new_picture_path = st.text_input("Bildpfad", value="data/pictures/none.png")
-        uploaded_csv = st.file_uploader("CTG/ CTG CSV-Datei hochladen", type=["csv"])
+        uploaded_img = st.file_uploader("Profilbild hochladen (PNG)", type=["png"])
+        uploaded_csvs = st.file_uploader("CTG-Dateien hochladen (mehrere möglich)", type=["csv"], accept_multiple_files=True)
 
         add_btn = st.form_submit_button("Neue Person speichern")
 
@@ -199,17 +247,21 @@ with tab3:
             if any(p["id"] == new_id for p in person_list_data):
                 st.error("ID existiert bereits!")
             else:
-                ctg_dir = "data/CTG_data"
-                os.makedirs(ctg_dir, exist_ok=True)
+                new_picture_path = "data/pictures/none.png"
+                if uploaded_img:
+                    new_picture_path = os.path.join("data/pictures", f"{new_id}.png")
+                    with open(new_picture_path, "wb") as f:
+                        f.write(uploaded_img.getbuffer())
 
                 ctg_tests = []
-                if uploaded_csv is not None:
-                    csv_path = os.path.join(ctg_dir, f"{new_id}.csv")
+                ctg_dir = "data/CTG_data" 
+                for idx, uploaded_csv in enumerate(uploaded_csvs):
+                    csv_path = os.path.join(ctg_dir, f"{new_id}_ctg_{idx + 1}.csv")
                     with open(csv_path, "wb") as f:
                         f.write(uploaded_csv.getbuffer())
 
                     ctg_tests.append({
-                        "id": int(new_id),
+                        "id": int(f"{new_id}{idx + 1}"),  # eindeutige ID
                         "date": datetime.now().strftime("%d.%m.%Y"),
                         "result_link": csv_path
                     })
@@ -232,9 +284,10 @@ with tab3:
                     json.dump(person_list_data, f, indent=4)
 
                 st.success(f"Neue Person {new_firstname} {new_lastname} gespeichert!")
-                if uploaded_csv is not None:
-                    st.info(f"CSV gespeichert unter: {csv_path}")
-                # 🔁 App neu laden, damit die neue Person im Dropdown erscheint
+                if uploaded_csvs:
+                    st.info(f"{len(uploaded_csvs)} CTG-Datei(en) gespeichert.")
+                if uploaded_img:
+                    st.info("Profilbild erfolgreich gespeichert.")
                 st.rerun()
 
 
@@ -252,6 +305,17 @@ with tab4:
         include_ctg = st.checkbox("📊 CTG-Auswertung", value=True)
         include_image = st.checkbox("🖼 Profilbild in Bericht aufnehmen", value=True)
         include_ctg_plot = st.checkbox("📈 CTG-Diagramm einfügen", value=True)
+        include_wehen = st.checkbox("💢 Wehenanalyse aufnehmen", value=True)
+
+        # 📁 CTG-Auswahl basierend auf Datum
+        ctg_labels = [test["date"] for test in selected_person.CTG_tests]
+        selected_ctg_index = st.selectbox(
+            "📅 CTG-Datum für Bericht",
+            options=range(len(ctg_labels)),
+            format_func=lambda i: ctg_labels[i],
+            index=0
+        )
+
 
         # Fötus-Auswahl
         fetus_name = None
@@ -274,16 +338,25 @@ with tab4:
             )
             selected_time_range = (start_time, end_time)
 
+        # Wehenparameter aus session_state oder mit Standardwerten
+        wehen_height = st.session_state.get("wehen_height", 5.0)
+        wehen_distance = st.session_state.get("wehen_distance", 120)
+
+
         if st.button("📥 Bericht generieren"):
             pdf = generate_pdf(
-                selected_person,
+                person=selected_person,
+                fetus_name=fetus_name,
+                time_range=selected_time_range,
                 include_info=include_info,
                 include_risk=include_risk,
                 include_ctg=include_ctg,
                 include_image=include_image,
                 include_ctg_plot=include_ctg_plot,
-                fetus_name=fetus_name,
-                time_range=selected_time_range
+                include_wehen=include_wehen,
+                wehen_height=wehen_height,
+                wehen_distance=wehen_distance,
+                ctg_index=selected_ctg_index
             )
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
@@ -298,8 +371,8 @@ with tab4:
     else:
         st.info("Bitte im ersten Tab eine Person auswählen.")
 
-# ---------------------------------------------
-# Tab 5: Live-Simulation & Alarm mit Standbild
+#----------------------------------------------
+# Tab 5: Live-Simulation & Alarm
 # ---------------------------------------------
 with tab5:
     st.title("▶️ CTG Live-Simulation")
