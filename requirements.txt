@@ -3,6 +3,6 @@ pandas
 plotly
 scikit-learn
 openpyxl
-pillow==10.2.0
+pillow>=11.0.0
 numpy
 scipy
