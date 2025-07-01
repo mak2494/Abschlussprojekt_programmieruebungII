@@ -89,6 +89,7 @@ with tab1:
                 new_gest_age = st.number_input("Schwangerschaftswoche", value=selected_person.gestational_age_weeks, step=1)
                 new_medical_conditions = st.text_area("Vorerkrankungen (Komma-getrennt)", value=", ".join(selected_person.medical_conditions))
                 new_picture_path = st.text_input("Bildpfad", value=selected_person.picture_path)
+                uploaded_csvs = st.file_uploader("Weitere CTG-Dateien hochladen", type=["csv"], accept_multiple_files=True)
 
                 save_btn = st.form_submit_button("Änderungen speichern")
 
@@ -102,6 +103,29 @@ with tab1:
                     selected_person_data["gestational_age_weeks"] = int(new_gest_age)
                     selected_person_data["medical_conditions"] = [s.strip() for s in new_medical_conditions.split(",") if s.strip()]
                     selected_person_data["picture_path"] = new_picture_path
+
+                        # 📌 Neue CTG-Dateien anhängen
+                if uploaded_csvs:
+                    ctg_dir = "data/CTG_data"
+                    os.makedirs(ctg_dir, exist_ok=True)
+
+                # Füge CTG-Tests hinzu oder erweitere vorhandene
+                    if "CTG_tests" not in selected_person_data:
+                        selected_person_data["CTG_tests"] = []
+
+                    start_id = max([t["id"] for t in selected_person_data["CTG_tests"]], default=int(selected_person_data["id"]) * 10)
+
+                    for i, csv_file in enumerate(uploaded_csvs):
+                        new_id = start_id + i + 1
+                        csv_path = os.path.join(ctg_dir, f"{selected_person_data['id']}_ctg_{new_id}.csv")
+                        with open(csv_path, "wb") as f:
+                            f.write(csv_file.getbuffer())
+
+                        selected_person_data["CTG_tests"].append({
+                            "id": new_id,
+                            "date": datetime.now().strftime("%d.%m.%Y"),
+                            "result_link": csv_path
+                        })
 
                     with open("data/person_db.json", "w") as f:
                         json.dump(person_list_data, f, indent=4)
@@ -189,7 +213,7 @@ with tab3:
         new_gest_age = st.number_input("Schwangerschaftswoche", value=0, step=1)
         new_medical_conditions = st.text_area("Vorerkrankungen (Komma-getrennt)")
         new_picture_path = st.text_input("Bildpfad", value="data/pictures/none.png")
-        uploaded_csv = st.file_uploader("CTG/ CTG CSV-Datei hochladen", type=["csv"])
+        uploaded_csvs = st.file_uploader("CTG-Dateien hochladen (mehrere möglich)", type=["csv"], accept_multiple_files=True)
 
         add_btn = st.form_submit_button("Neue Person speichern")
 
@@ -201,13 +225,13 @@ with tab3:
                 os.makedirs(ctg_dir, exist_ok=True)
 
                 ctg_tests = []
-                if uploaded_csv is not None:
-                    csv_path = os.path.join(ctg_dir, f"{new_id}.csv")
+                for idx, uploaded_csv in enumerate(uploaded_csvs):
+                    csv_path = os.path.join(ctg_dir, f"{new_id}_ctg_{idx + 1}.csv")
                     with open(csv_path, "wb") as f:
                         f.write(uploaded_csv.getbuffer())
 
                     ctg_tests.append({
-                        "id": int(new_id),
+                        "id": int(f"{new_id}{idx + 1}"),  # eindeutige ID
                         "date": datetime.now().strftime("%d.%m.%Y"),
                         "result_link": csv_path
                     })
@@ -230,8 +254,8 @@ with tab3:
                     json.dump(person_list_data, f, indent=4)
 
                 st.success(f"Neue Person {new_firstname} {new_lastname} gespeichert!")
-                if uploaded_csv is not None:
-                    st.info(f"CSV gespeichert unter: {csv_path}")
+                if uploaded_csvs is not None:
+                    st.info(f"{len(uploaded_csvs)} CSV-Datei(en) gespeichert.")
                 # 🔁 App neu laden, damit die neue Person im Dropdown erscheint
                 st.rerun()
 
