@@ -104,38 +104,6 @@ with tab1:
                     selected_person_data["medical_conditions"] = [s.strip() for s in new_medical_conditions.split(",") if s.strip()]
                     selected_person_data["picture_path"] = new_picture_path
 
-                        # 📌 Neue CTG-Dateien anhängen
-                if uploaded_csvs:
-                    ctg_dir = "data/CTG_data"
-                    os.makedirs(ctg_dir, exist_ok=True)
-
-                # Füge CTG-Tests hinzu oder erweitere vorhandene
-                    if "CTG_tests" not in selected_person_data or selected_person_data["CTG_tests"] is None:
-                        selected_person_data["CTG_tests"] = []
-
-# Bestehende IDs sammeln
-                    existing_ids = [test["id"] for test in selected_person_data["CTG_tests"]]
-                    start_id = max(existing_ids, default=int(selected_person_data["id"]) * 10)
-
-# Neue CSVs anhängen
-                    if uploaded_csvs:
-                        ctg_dir = "data/CTG_data"
-                        os.makedirs(ctg_dir, exist_ok=True)
-
-                        for i, file in enumerate(uploaded_csvs):
-                            ctg_id = start_id + i + 1
-                            filename = f"{selected_person_data['id']}_ctg_{ctg_id}.csv"
-                            csv_path = os.path.join(ctg_dir, filename)
-
-                            with open(csv_path, "wb") as f:
-                                f.write(file.getbuffer())
-
-                            selected_person_data["CTG_tests"].append({
-                                "id": ctg_id,
-                                "date": datetime.now().strftime("%d.%m.%Y"),
-                                "result_link": csv_path
-                            })
-
                     with open("data/person_db.json", "w") as f:
                         json.dump(person_list_data, f, indent=4)
 
