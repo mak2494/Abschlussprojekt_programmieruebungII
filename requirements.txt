@@ -7,5 +7,4 @@ pillow>=11.0.0
 numpy
 scipy
 fpdf
-kaleido>=0.2.1
-streamlit-lottie
+kaleido

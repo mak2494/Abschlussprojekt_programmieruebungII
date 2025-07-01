@@ -12,10 +12,7 @@ from read_CSV import CTG_Data
 from plotly.colors import qualitative
 from wehen_analysis import WehenAnalysis
 import pandas as pd
-import plotly.io as pio
 
-# Optional: sichere Start-Parameter für headless Chrome
-pio.kaleido.scope.chromium_args = ["--no-sandbox", "--disable-dev-shm-usage"]
 
 class PDF(FPDF):
     """
@@ -159,7 +156,7 @@ def generate_pdf(
         if include_ctg_plot:
             fig = ctg.plotly_figure(time_range=time_range, show_rangeslider=False)
             with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpimg:
-                fig.write_image(tmpimg.name, width=700, height=300, engine="kaleido")
+                fig.write_image(tmpimg.name, width=700, height=300)
                 pdf.add_page()
                 section_heading("CTG-Diagramm")
                 pdf.image(tmpimg.name, x=10, w=190)
