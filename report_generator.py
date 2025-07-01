@@ -155,7 +155,7 @@ def generate_pdf(
         if include_ctg_plot:
             fig = ctg.plotly_figure(time_range=time_range, show_rangeslider=False)
             with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpimg:
-                fig.write_image(tmpimg.name, width=700, height=300)
+                fig.write_image(tmpimg.name, width=700, height=300, engine="kaleido")
                 pdf.add_page()
                 section_heading("CTG-Diagramm")
                 pdf.image(tmpimg.name, x=10, w=190)
