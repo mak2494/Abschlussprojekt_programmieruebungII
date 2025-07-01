@@ -30,7 +30,8 @@ def generate_pdf(
     include_ctg_plot=True,
     include_wehen=True,
     wehen_height=5.0,         # 💡 Default-Wert setzen
-    wehen_distance=120        # 💡 Default-Wert setzen
+    wehen_distance=120,
+    ctg_index=0                # 💡 Default-Wert setzen
 ):
     pdf = PDF()
     pdf.add_page()
@@ -77,8 +78,9 @@ def generate_pdf(
 
     # 📊 CTG-Auswertung
     if include_ctg and person.CTG_tests:
+        ctg_data = person.CTG_tests[ctg_index]
         ctg = CTG_Data(
-            person.CTG_tests[0]["result_link"],
+            ctg_data["result_link"],
             fetus=next((f for f in person.fetuses_list if f.name == fetus_name), None)
         )
         ctg.read_csv()
@@ -90,6 +92,7 @@ def generate_pdf(
         section_heading("CTG-Auswertung")
         if fetus_name:
             pdf.cell(0, 10, f"Ausgewählter Fötus: {fetus_name}", ln=True)
+            pdf.cell(0, 10, f"CTG-Datum: {ctg_data['date']}", ln=True)
         if time_range:
             pdf.cell(0, 10, f"Zeitbereich: {time_range[0]} - {time_range[1]} Sekunden", ln=True)
             pdf.cell(0, 10, f"Durchschnittliche HF: {avg:.1f} bpm", ln=True)

@@ -126,7 +126,11 @@ with tab2:
             st.session_state.selected_fetus_name = None
 
         if selected_person.CTG_tests:
-            selected_ctg_path = selected_person.CTG_tests[0]['result_link']
+            ctg_labels = [test["date"] for test in selected_person.CTG_tests]
+            selected_ctg_index = st.selectbox("CTG-Datum wählen:", options=range(len(ctg_labels)), format_func=lambda i: ctg_labels[i])
+            st.session_state.selected_ctg_index = selected_ctg_index  # 👉 für Tab4/PDF merken
+
+            selected_ctg_path = selected_person.CTG_tests[selected_ctg_index]['result_link']
             ctg = CTG_Data(selected_ctg_path, fetus=selected_fetus_name)
             ctg.read_csv()
 
@@ -248,6 +252,16 @@ with tab4:
         include_ctg_plot = st.checkbox("📈 CTG-Diagramm einfügen", value=True)
         include_wehen = st.checkbox("💢 Wehenanalyse aufnehmen", value=True)
 
+        # 📁 CTG-Auswahl basierend auf Datum
+        ctg_labels = [test["date"] for test in selected_person.CTG_tests]
+        selected_ctg_index = st.selectbox(
+            "📅 CTG-Datum für Bericht",
+            options=range(len(ctg_labels)),
+            format_func=lambda i: ctg_labels[i],
+            index=0
+        )
+
+
         # Fötus-Auswahl
         fetus_name = None
         if selected_person.fetuses_list:
@@ -286,7 +300,8 @@ with tab4:
                 include_ctg_plot=include_ctg_plot,
                 include_wehen=include_wehen,
                 wehen_height=wehen_height,
-                wehen_distance=wehen_distance
+                wehen_distance=wehen_distance,
+                ctg_index=selected_ctg_index
             )
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
