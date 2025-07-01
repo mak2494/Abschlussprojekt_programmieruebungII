@@ -115,6 +115,11 @@ class CTG_Data:
 
     
     def get_lb_column(self):
+        # Wenn das DataFrame noch nicht geladen wurde, lade es jetzt:
+        if self.df is None:
+            self.read_csv()
+        # Prüfe, ob die Spalte LB, LB1 oder LB2 existiert
+      
         if self.fetus is None:
         # Kein Fötus angegeben – versuche LB, LB1, LB2 der Reihe nach
             for col in ['LB', 'LB1', 'LB2']:

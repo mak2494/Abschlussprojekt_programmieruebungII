@@ -9,6 +9,11 @@ from wehen_analysis import WehenAnalysis
 from report_generator import generate_pdf
 from ctg_simulator import CTGSimulator
 import tempfile
+import pandas as pd
+import time
+import plotly.graph_objects as go
+from streamlit.runtime.scriptrunner import RerunException
+
 
 st.set_page_config(page_title="CTG APP")
 
@@ -292,55 +297,73 @@ with tab4:
     else:
         st.info("Bitte im ersten Tab eine Person auswählen.")
 
- # Tab 5: Live-Simulation & Alarm
+# ---------------------------------------------
+# Tab 5: Live-Simulation & Alarm mit Standbild
 # ---------------------------------------------
 with tab5:
     st.title("▶️ CTG Live-Simulation")
 
-    if st.session_state.current_user in person_names:
-        # Person auswählen
-        selected_person_data = Person.find_person_data_by_name(st.session_state.current_user)
-        selected_person = Person(selected_person_data)
-
-        if not selected_person.CTG_tests:
-            st.warning("⚠️ Keine CTG-Dateien für diese Person hinterlegt.")
-        else:
-            # Fötus-Auswahl (falls vorhanden)
-            if selected_person.fetuses_list:
-                fetus_names = [f.name for f in selected_person.fetuses_list]
-                selected_fetus_name = st.selectbox(
-                    "Fötus wählen", options=fetus_names, key="sim_fetus_select"
-                )
-            else:
-                selected_fetus_name = None
-
-            # CTG-Dateipfad
-            selected_ctg_path = selected_person.CTG_tests[0]['result_link']
-
-
-            # CTG-Daten kurz laden, um die LB-Spalte zu bestimmen
-            ctg = CTG_Data(selected_ctg_path, fetus=selected_fetus_name)
-            ctg.read_csv()
-            lb_col = ctg.get_lb_column()
-
-            # Parameter-Einstellungen
-            bpm_thr = st.number_input(
-                "Alarm-Schwelle (bpm)", min_value=60, max_value=160, value=110, step=1
-            )
-            interval = st.select_slider(
-                "Simulationstempo (Sekunden pro Schritt)",
-                options=[0.1, 0.5, 1.0, 2.0],
-                value=1.0,
-                key="sim_speed"
-            )
-
-            # Simulator starten
-            simulator = CTGSimulator(
-                csv_path=selected_ctg_path,
-                lb_col=lb_col,
-                bpm_threshold=bpm_thr,
-                interval=interval
-            )
-            simulator.run()  # ruft intern run_live() auf
-    else:
+    # 1) Vorbedingungen
+    if st.session_state.current_user not in person_names:
         st.info("Bitte im ersten Tab eine Person auswählen.")
+        st.stop()
+    person_data = Person.find_person_data_by_name(st.session_state.current_user)
+    if not person_data["CTG_tests"]:
+        st.warning("⚠️ Keine CTG-Dateien für diese Person hinterlegt.")
+        st.stop()
+
+    # 2) Fötus-Auswahl
+    ctg_path = person_data["CTG_tests"][0]["result_link"]
+    fetuses = Person(person_data).fetuses_list or []
+    selected_fetus_name = None
+    if fetuses:
+        selected_fetus_name = st.selectbox(
+            "Fötus wählen", [f.name for f in fetuses], key="sim_fetus_select"
+        )
+
+    # 3) Parameter
+    bpm_thr  = st.number_input("Alarm-Schwelle (bpm)", 60, 160, 110, 1, key="sim_bpm_thr")
+    interval = st.select_slider(
+        "Simulations-Tempo (Sekunden pro Schritt)",
+        [0.1, 0.5, 1.0, 2.0], 0.1, key="sim_interval"
+    )
+
+    # 4) Session-State für Start/Stop (einmalig)
+    if "sim_running" not in st.session_state:
+        st.session_state.sim_running = False
+    if "sim_alerts" not in st.session_state:
+        st.session_state.sim_alerts = []
+
+    # 5) Buttons
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("▶️ Start Simulation", key="btn_start_sim"):
+            # Start: sim_running an und Alerts zurücksetzen
+            st.session_state.sim_running = True
+            st.session_state.sim_alerts = []
+    with col2:
+        if st.button("⏹️ Stop Simulation", key="btn_stop_sim"):
+            st.session_state.sim_running = False
+
+    # 6) Wenn gerade läuft: Simulation starten
+    if st.session_state.sim_running:
+        simulator = CTGSimulator(
+            csv_path=ctg_path,
+            lb_col=CTG_Data(ctg_path, fetus=selected_fetus_name).get_lb_column(),
+            bpm_threshold=bpm_thr,
+            interval=interval
+        )
+        simulator.run_live()
+
+    # 7) Wenn gestoppt oder noch nie gestartet: letztes Standbild zeigen
+    else:
+        # letzte Figur?
+        if "sim_last_fig" in st.session_state and st.session_state.sim_last_fig is not None:
+            st.plotly_chart(st.session_state.sim_last_fig, use_container_width=True)
+            # gespeicherte Alerts anzeigen
+            if st.session_state.sim_alerts:
+                st.warning("🔔 Alarm-Übersicht:")
+                for alert in st.session_state.sim_alerts:
+                    st.error(alert)
+        else:
+            st.info("Klicke ▶️ Start Simulation, um zu beginnen.")
