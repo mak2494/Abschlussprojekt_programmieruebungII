@@ -119,8 +119,11 @@ with tab2:
         if selected_person.fetuses_list:
             fetus_names = [f.name for f in selected_person.fetuses_list]
             selected_fetus_name = st.selectbox("Fötus für HF-Auswertung wählen:", options=fetus_names, key="ctg_fetus_select")
+            # 💾 Für spätere Nutzung (z. B. Tab 4/PDF) speichern
+            st.session_state.selected_fetus_name = selected_fetus_name
         else:
             selected_fetus_name = None
+            st.session_state.selected_fetus_name = None
 
         if selected_person.CTG_tests:
             selected_ctg_path = selected_person.CTG_tests[0]['result_link']
@@ -244,6 +247,27 @@ with tab4:
         include_image = st.checkbox("🖼 Profilbild in Bericht aufnehmen", value=True)
         include_ctg_plot = st.checkbox("📈 CTG-Diagramm einfügen", value=True)
 
+        # Fötus-Auswahl
+        fetus_name = None
+        if selected_person.fetuses_list:
+            fetus_options = [f.name for f in selected_person.fetuses_list]
+            fetus_name = st.selectbox("👶 Fötus für Bericht wählen", options=fetus_options)
+
+        # Zeitbereichs-Auswahl (maximal 750 Sekunden)
+        selected_time_range = None
+        if include_ctg_plot:
+            st.write("### Zeitbereich für Diagramm (Sekunden)")
+            MAX_TIME = 740
+            start_time = st.number_input("Startzeit (s)", min_value=0, max_value=MAX_TIME - 10, value=0, step=10)
+            end_time = st.number_input(
+                "Endzeit (s)", 
+                min_value=start_time + 10, 
+                max_value=MAX_TIME, 
+                value=min(start_time + 300, MAX_TIME), 
+                step=10
+            )
+            selected_time_range = (start_time, end_time)
+
         if st.button("📥 Bericht generieren"):
             pdf = generate_pdf(
                 selected_person,
@@ -251,7 +275,9 @@ with tab4:
                 include_risk=include_risk,
                 include_ctg=include_ctg,
                 include_image=include_image,
-                include_ctg_plot=include_ctg_plot
+                include_ctg_plot=include_ctg_plot,
+                fetus_name=fetus_name,
+                time_range=selected_time_range
             )
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
@@ -263,6 +289,9 @@ with tab4:
                         file_name=f"Bericht_{selected_person.firstname}_{selected_person.lastname}.pdf",
                         mime="application/pdf"
                     )
+    else:
+        st.info("Bitte im ersten Tab eine Person auswählen.")
+
  # Tab 5: Live-Simulation & Alarm
 # ---------------------------------------------
 with tab5:

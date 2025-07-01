@@ -19,6 +19,8 @@ class PDF(FPDF):
 
 def generate_pdf(
     person,
+    fetus_name=None,
+    time_range=None,
     include_info=True,
     include_risk=True,
     include_ctg=True,
@@ -28,6 +30,7 @@ def generate_pdf(
     pdf = PDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
+
 
     # 📌 Abschnittsüberschrift
     def section_heading(title):
@@ -71,7 +74,7 @@ def generate_pdf(
     if include_ctg and person.CTG_tests:
         ctg = CTG_Data(
             person.CTG_tests[0]["result_link"],
-            fetus=person.fetuses_list[0] if person.fetuses_list else None
+            fetus=next((f for f in person.fetuses_list if f.name == fetus_name), None)
         )
         ctg.read_csv()
 
@@ -80,26 +83,25 @@ def generate_pdf(
         min_hr = ctg.min_HR_baby()
 
         section_heading("CTG-Auswertung")
-        pdf.set_text_color(0)
-        pdf.cell(0, 10, f"Durchschnittliche HF: {avg:.1f} bpm", ln=True)
-        pdf.cell(0, 10, f"Maximale HF: {max_hr:.1f} bpm", ln=True)
-        pdf.cell(0, 10, f"Minimale HF: {min_hr:.1f} bpm", ln=True)
-        pdf.ln(3)
+        if fetus_name:
+            pdf.cell(0, 10, f"Ausgewählter Fötus: {fetus_name}", ln=True)
+        if time_range:
+            pdf.cell(0, 10, f"Zeitbereich: {time_range[0]} - {time_range[1]} Sekunden", ln=True)
+            pdf.cell(0, 10, f"Durchschnittliche HF: {avg:.1f} bpm", ln=True)
+            pdf.cell(0, 10, f"Maximale HF: {max_hr:.1f} bpm", ln=True)
+            pdf.cell(0, 10, f"Minimale HF: {min_hr:.1f} bpm", ln=True)
+            pdf.ln(3)
 
-        # 📈 Diagramm einfügen
         if include_ctg_plot:
-            fig = ctg.plotly_figure()  # 🔁 Kein title mehr erlaubt
-
+            fig = ctg.plotly_figure(time_range=time_range)
             with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpimg:
                 fig.write_image(tmpimg.name, width=700, height=300)
                 pdf.add_page()
                 section_heading("CTG-Diagramm")
-                pdf.ln(5)
                 pdf.image(tmpimg.name, x=10, w=190)
 
     elif include_ctg:
         section_heading("CTG-Auswertung")
-        pdf.set_text_color(0)
         pdf.cell(0, 10, txt="Keine CTG-Daten verfügbar.", ln=True)
 
     return pdf

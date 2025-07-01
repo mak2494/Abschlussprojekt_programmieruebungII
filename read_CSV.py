@@ -26,35 +26,39 @@ class CTG_Data:
         return self.df
 
 
-    def plotly_figure(self):
+    def plotly_figure(self, time_range=None):
         if self.df is None:
             raise ValueError("CSV wurde noch nicht eingelesen. Bitte zuerst read_csv() aufrufen.")
 
-        # 1) Downsampling nur ab >2000 Punkten
-        n = len(self.df)
-        if n > 2000:
-            factor = int(n / 2000)  # so ergibt sich ca. 2000 Punkte
-            df_plot = self.df.iloc[::factor]
-        else:
-            df_plot = self.df
+    # Optional Zeitbereich beschränken (z. B. fürs PDF)
+        df_plot = self.df.copy()
+        if time_range:
+            start_sec, end_sec = time_range
+            df_plot = df_plot[(df_plot.index.total_seconds() >= start_sec) &
+                              (df_plot.index.total_seconds() <= end_sec)]
 
-        # 2) Index in Sekunden
+    # X-Achse (Zeit in Sekunden)
         x = df_plot.index.total_seconds()
 
         fig = go.Figure()
 
-        # 3) Fetale Herzfrequenz per WebGL
-        for lb in [c for c in df_plot.columns if c.startswith("LB")]:
+    # Nur die relevante LB-Spalte für den Fötus zeichnen
+        try:
+            lb_col = self.get_lb_column()
+        except ValueError as e:
+            lb_col = None  # Falls kein LB gefunden wurde
+
+        if lb_col and lb_col in df_plot.columns:
             fig.add_trace(go.Scattergl(
                 x=x,
-                y=df_plot[lb],
+                y=df_plot[lb_col],
                 mode='lines',
-                name=lb,
-                line=dict(width=2),
+                name=lb_col,
+                line=dict(width=2, color="blue"),
                 yaxis='y1'
             ))
 
-        # 4) UC als gefüllte WebGL-Linie
+    # UC-Kurve ebenfalls zeichnen
         if 'UC' in df_plot.columns:
             fig.add_trace(go.Scattergl(
                 x=x,
@@ -67,14 +71,14 @@ class CTG_Data:
                 yaxis='y2'
             ))
 
-         # 5) X-Ticks alle 10 Sekunden
-        maxs = int(x.max())
-        ticks = list(range(0, maxs + 1, 10))  # 0, 10, 20, …, maxs
+    # X-Achsen-Ticks berechnen
+        maxs = int(x.max()) if len(x) > 0 else 300
+        ticks = list(range(0, maxs + 1, 10))
 
         fig.update_layout(
             template='simple_white',
-            hovermode='x unified',   # gemeinsames Hoverfenster
-            dragmode='zoom',         # Zoom & Pan aktiv
+            hovermode='x unified',
+            dragmode='zoom',
             legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
             margin=dict(l=60, r=60, t=50, b=40),
             xaxis=dict(
@@ -85,9 +89,9 @@ class CTG_Data:
                 showgrid=True,
                 gridcolor='lightgrey',
                 ticks='outside',
-                range=[0, 300],  # Anfangsbereich: 5 Minuten
-                rangeslider=dict(visible=True),  # Scrollbalken aktivieren
-                type='linear'   
+                range=[ticks[0], ticks[-1]] if ticks else None,
+                rangeslider=dict(visible=True),
+                type='linear'
             ),
             yaxis=dict(
                 title='Fetal Heart Rate (BPM)',
@@ -101,8 +105,8 @@ class CTG_Data:
                 overlaying='y',
                 side='right',
                 showgrid=False,
-                range=[-5, df_plot['UC'].max() * 1.1 if 'UC' in df_plot.columns else 1],
-                dtick=(df_plot['UC'].max() / 5) if 'UC' in df_plot.columns else 1
+                range=[-5, df_plot['UC'].max() * 1.1 if 'UC' in df_plot.columns else 50],
+                dtick=(df_plot['UC'].max() / 5) if 'UC' in df_plot.columns else 10
             )
         )
 
@@ -112,18 +116,23 @@ class CTG_Data:
     
     def get_lb_column(self):
         if self.fetus is None:
+        # Kein Fötus angegeben – versuche LB, LB1, LB2 der Reihe nach
             for col in ['LB', 'LB1', 'LB2']:
                 if col in self.df.columns:
                     return col
             raise ValueError("Keine LB-Spalte im DataFrame gefunden.")
 
+    # 🧠 Fötusname auswerten (z.B. "Fötus 2")
         try:
-            fetus_index = int(self.fetus.name.split()[-1])
+            if isinstance(self.fetus, str) and "Fötus" in self.fetus:
+                fetus_index = int(self.fetus.strip().split()[-1])  # → 1 oder 2
+            else:
+                fetus_index = int(self.fetus.name.strip().split()[-1])
         except Exception:
             fetus_index = 1
 
+    # 🧬 Entsprechende Spalte wählen
         possible_cols = [f'LB{fetus_index}', 'LB']
-
         for col in possible_cols:
             if col in self.df.columns:
                 return col
