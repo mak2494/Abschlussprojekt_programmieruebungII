@@ -50,22 +50,27 @@ def generate_pdf(
     # 🧍 Basisdaten
     if include_info:
         section_heading("Basisdaten")
+        start_y = pdf.get_y()
 
         if include_image and person.picture_path and os.path.exists(person.picture_path):
             try:
-                pdf.image(person.picture_path, x=70, y=pdf.get_y(), w=70)
-                pdf.ln(60)
+                pdf.image(person.picture_path, x=140, y=start_y, w=50)
             except RuntimeError:
-                pdf.cell(200, 10, txt="⚠️ Bild konnte nicht geladen werden.", ln=True)
+                pdf.set_xy(140, start_y)
+                pdf.cell(50, 10, txt="⚠️ Bildfehler", ln=True)
         else:
-            pdf.cell(200, 10, txt="(Kein Bild verfügbar)", ln=True)
+            pdf.set_xy(140, start_y)
+            pdf.cell(50, 10, txt="(Kein Bild)", ln=True)
 
+        pdf.set_xy(10, start_y)
         pdf.set_text_color(0)
         pdf.cell(0, 10, f"Name: {person.firstname} {person.lastname}", ln=True)
         pdf.cell(0, 10, f"Alter: {person.calculate_age()} Jahre", ln=True)
         pdf.cell(0, 10, f"Geschlecht: {person.gender}", ln=True)
         pdf.cell(0, 10, f"Schwangerschaftswoche: {person.gestational_age_weeks}", ln=True)
         pdf.cell(0, 10, f"Anzahl der Föten: {person.fetuses}", ln=True)
+        conditions = ", ".join(person.medical_conditions) if person.medical_conditions else "Keine"
+        pdf.cell(0, 10, f"Vorerkrankungen: {conditions}", ln=True)
         pdf.ln(3)
 
     # ⚠️ Risikoeinschätzung
