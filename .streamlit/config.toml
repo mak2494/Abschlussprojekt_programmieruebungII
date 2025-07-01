@@ -1,0 +1,7 @@
+[theme]
+primaryColor = "#008080"              # Teal
+backgroundColor ="#F5FFFA"         # sehr helles türkis
+secondaryBackgroundColor = "#E6E6FA"  # Lavendel
+textColor = "#2F4F4F"                 # Anthrazit
+font = "sans serif"
+
