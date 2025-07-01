@@ -3,6 +3,8 @@ import tempfile
 from fpdf import FPDF
 from read_CSV import CTG_Data
 from plotly.colors import qualitative
+from wehen_analysis import WehenAnalysis
+import pandas as pd
 
 class PDF(FPDF):
     def header(self):
@@ -25,7 +27,10 @@ def generate_pdf(
     include_risk=True,
     include_ctg=True,
     include_image=True,
-    include_ctg_plot=True
+    include_ctg_plot=True,
+    include_wehen=True,
+    wehen_height=5.0,         # 💡 Default-Wert setzen
+    wehen_distance=120        # 💡 Default-Wert setzen
 ):
     pdf = PDF()
     pdf.add_page()
@@ -93,13 +98,59 @@ def generate_pdf(
             pdf.ln(3)
 
         if include_ctg_plot:
-            fig = ctg.plotly_figure(time_range=time_range)
+            fig = ctg.plotly_figure(time_range=time_range, show_rangeslider=False)
             with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpimg:
                 fig.write_image(tmpimg.name, width=700, height=300)
                 pdf.add_page()
                 section_heading("CTG-Diagramm")
                 pdf.image(tmpimg.name, x=10, w=190)
 
+# Wehenanalyse
+        if include_wehen:
+            section_heading("Wehenanalyse")
+
+            wehen = WehenAnalysis(ctg)
+            df_peaks = wehen.detect_contractions(height=wehen_height, distance=wehen_distance)
+            df_cat = wehen.classify_contractions(df_peaks)
+
+            pdf.cell(0, 10, f"Minimale UC-Höhe: {wehen_height}", ln=True)
+            pdf.cell(0, 10, f"Minimaler Abstand: {wehen_distance} Sekunden", ln=True)
+            pdf.ln(3)
+
+            if df_cat.empty:
+                pdf.cell(0, 10, "Keine Wehen erkannt.", ln=True)
+            else:
+        # 📋 Tabelle 1: Detailübersicht
+                pdf.set_font("Arial", style="B", size=10)
+                pdf.cell(40, 8, "Zeitpunkt (min)", border=1)
+                pdf.cell(50, 8, "Abstand (s)", border=1)
+                pdf.cell(40, 8, "Dauer (s)", border=1)
+                pdf.cell(60, 8, "Kategorie", border=1)
+                pdf.ln()
+
+                pdf.set_font("Arial", size=9)
+                for _, row in df_cat.iterrows():
+                    pdf.cell(40, 8, f"{row['Wehenzeitpunkt (min)']:.2f}", border=1)
+                    abstand = f"{row['Abstand zur vorherigen Wehe (s)']:.1f}" if pd.notna(row['Abstand zur vorherigen Wehe (s)']) else "-"
+                    pdf.cell(50, 8, abstand, border=1)
+                    pdf.cell(40, 8, f"{row['Wehendauer (s)']:.1f}", border=1)
+                    pdf.cell(60, 8, row['category'], border=1)
+                    pdf.ln()
+
+                pdf.ln(5)
+        # 📋 Tabelle 2: Anzahl pro Kategorie
+                pdf.set_font("Arial", style="B", size=10)
+                pdf.cell(100, 8, "Kategorie", border=1)
+                pdf.cell(40, 8, "Anzahl", border=1)
+                pdf.ln()
+
+                pdf.set_font("Arial", size=9)
+                summary = df_cat['category'].value_counts().rename_axis('Kategorie').reset_index(name='Anzahl')
+                for _, row in summary.iterrows():
+                    pdf.cell(100, 8, row['Kategorie'], border=1)
+                    pdf.cell(40, 8, str(row['Anzahl']), border=1)
+                    pdf.ln()
+    
     elif include_ctg:
         section_heading("CTG-Auswertung")
         pdf.cell(0, 10, txt="Keine CTG-Daten verfügbar.", ln=True)

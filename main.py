@@ -246,6 +246,7 @@ with tab4:
         include_ctg = st.checkbox("📊 CTG-Auswertung", value=True)
         include_image = st.checkbox("🖼 Profilbild in Bericht aufnehmen", value=True)
         include_ctg_plot = st.checkbox("📈 CTG-Diagramm einfügen", value=True)
+        include_wehen = st.checkbox("💢 Wehenanalyse aufnehmen", value=True)
 
         # Fötus-Auswahl
         fetus_name = None
@@ -268,16 +269,24 @@ with tab4:
             )
             selected_time_range = (start_time, end_time)
 
+        # Wehenparameter aus session_state oder mit Standardwerten
+        wehen_height = st.session_state.get("wehen_height", 5.0)
+        wehen_distance = st.session_state.get("wehen_distance", 120)
+
+
         if st.button("📥 Bericht generieren"):
             pdf = generate_pdf(
-                selected_person,
+                person=selected_person,
+                fetus_name=fetus_name,
+                time_range=selected_time_range,
                 include_info=include_info,
                 include_risk=include_risk,
                 include_ctg=include_ctg,
                 include_image=include_image,
                 include_ctg_plot=include_ctg_plot,
-                fetus_name=fetus_name,
-                time_range=selected_time_range
+                include_wehen=include_wehen,
+                wehen_height=wehen_height,
+                wehen_distance=wehen_distance
             )
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:

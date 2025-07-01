@@ -26,7 +26,7 @@ class CTG_Data:
         return self.df
 
 
-    def plotly_figure(self, time_range=None):
+    def plotly_figure(self, time_range=None, show_rangeslider=True):
         if self.df is None:
             raise ValueError("CSV wurde noch nicht eingelesen. Bitte zuerst read_csv() aufrufen.")
 
@@ -90,7 +90,7 @@ class CTG_Data:
                 gridcolor='lightgrey',
                 ticks='outside',
                 range=[ticks[0], ticks[-1]] if ticks else None,
-                rangeslider=dict(visible=True),
+                rangeslider=dict(visible=show_rangeslider),
                 type='linear'
             ),
             yaxis=dict(
