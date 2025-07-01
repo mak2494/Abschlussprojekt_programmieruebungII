@@ -12,6 +12,23 @@ import tempfile
 
 st.set_page_config(page_title="CTG APP")
 
+# -------------------------------
+# Globale Personenauswahl in Sidebar
+# -------------------------------
+with st.sidebar:
+    st.markdown("### 👤 Versuchsperson wählen")
+
+    person_list_data = Person.load_person_data()
+    person_names = Person.get_person_list(person_list_data)
+
+    if "current_user" not in st.session_state:
+        st.session_state.current_user = "None"
+
+    st.session_state.current_user = st.selectbox(
+        "Versuchsperson",
+        options=["None"] + person_names,
+        index=(["None"] + person_names).index(st.session_state.current_user)
+    )
 # ---------------------------------------------
 # Tabs einrichten
 # ---------------------------------------------
@@ -22,24 +39,16 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📄 PDF-Bericht",
     "▶️ Live-Simulation"
 ])
-# ---------------------------------------------
+#----------------------------------------------
 # Tab 1: Person anzeigen & bearbeiten
 # ---------------------------------------------
 with tab1:
     st.title("CTG APP")
-    st.write("## Versuchsperson auswählen")
-
-    person_list_data = Person.load_person_data()
-    person_names = Person.get_person_list(person_list_data)
-
-    if 'current_user' not in st.session_state:
-        st.session_state.current_user = 'None'
-
-    st.session_state.current_user = st.selectbox(
-        'Versuchsperson',
-        options=['None'] + person_names,
-        key="sbVersuchsperson"
-    )
+    if st.session_state.current_user in person_names:
+        selected_person_data = Person.find_person_data_by_name(st.session_state.current_user)
+        selected_person = Person(selected_person_data)
+    else:
+        st.info("Bitte links im Menü eine Versuchsperson auswählen.")
 
     if 'picture_path' not in st.session_state:
         st.session_state.picture_path = 'data/pictures/none.png'
@@ -77,6 +86,7 @@ with tab1:
                 st.info(f"{fetus}")
         else:
             st.info("Keine Föten vorhanden.")
+
 
         with st.expander("🔧 Person bearbeiten"):
             with st.form("edit_person_form"):
