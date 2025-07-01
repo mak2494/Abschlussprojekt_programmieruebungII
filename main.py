@@ -149,9 +149,7 @@ with tab1:
 
                         st.success("Änderungen gespeichert!")
                         st.rerun()
-
-                
-
+           
 # ---------------------------------------------
 # Tab 2: CTG Auswertung
 # ---------------------------------------------
@@ -366,8 +364,8 @@ with tab4:
                     )
     else:
         st.info("Bitte im ersten Tab eine Person auswählen.")
-
- # Tab 5: Live-Simulation & Alarm
+#----------------------------------------------
+# Tab 5: Live-Simulation & Alarm
 # ---------------------------------------------
 with tab5:
     st.title("▶️ CTG Live-Simulation")

@@ -1,3 +1,10 @@
+"""
+generate_report.py
+
+Dieses Modul erstellt PDF-Berichte zu CTG-Messungen und Personendaten.
+Es unterstützt optionale Inhalte wie Basisdaten, Risikoeinschätzung,
+Herzfrequenzanalysen, CTG-Diagramme und Wehenanalysen.
+"""
 import os
 import tempfile
 from fpdf import FPDF
@@ -7,6 +14,9 @@ from wehen_analysis import WehenAnalysis
 import pandas as pd
 
 class PDF(FPDF):
+    """
+    Erweiterte FPDF-Klasse mit Kopf- und Fußzeile für CTG-Berichte.
+    """
     def header(self):
         self.set_font("Arial", style="B", size=14)
         self.cell(0, 10, "CTG Bericht", ln=True, align='C')
@@ -33,6 +43,42 @@ def generate_pdf(
     wehen_distance=120,
     ctg_index=0                # 💡 Default-Wert setzen
 ):
+    """
+    Erstellt einen PDF-Bericht für eine gegebene Person mit optionalen Abschnitten:
+    - Basisdaten, Risikoeinschätzung, CTG-Auswertung, Diagramm und Wehenanalyse
+
+    Parameter:
+    ----------
+    person : Person
+        Instanz mit Patientendaten
+    fetus_name : str, optional
+        Name des Fötus für die Auswertung
+    time_range : tuple[int, int], optional
+        Zeitbereich für das CTG-Diagramm (Start, Ende in Sekunden)
+    include_info : bool
+        Basisinformationen einfügen
+    include_risk : bool
+        Risikoeinschätzung anzeigen
+    include_ctg : bool
+        CTG-Statistiken einfügen
+    include_image : bool
+        Profilbild anzeigen
+    include_ctg_plot : bool
+        CTG-Diagramm erzeugen und einfügen
+    include_wehen : bool
+        Analyse der Wehen einfügen
+    wehen_height : float
+        Mindesthöhe für Wehendetektion
+    wehen_distance : int
+        Mindestabstand in Sekunden zwischen Wehen
+    ctg_index : int
+        Index der zu analysierenden CTG-Datei
+
+    Rückgabe:
+    --------
+    pdf : FPDF
+        Generiertes PDF-Objekt
+    """
     pdf = PDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
@@ -40,6 +86,7 @@ def generate_pdf(
 
     # 📌 Abschnittsüberschrift
     def section_heading(title):
+        """Fügt eine farbige Abschnittsüberschrift ein."""
         pdf.set_font("Arial", size=12, style="B")
         pdf.set_fill_color(230, 230, 250)  # zartes Lila
         pdf.set_text_color(0)
