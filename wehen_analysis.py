@@ -4,10 +4,17 @@ from scipy.signal import find_peaks, peak_widths
 
 
 class WehenAnalysis:
+    """Analyse von Wehendaten aus CTG-Datensätzen.
+    Erkennt Wehen anhand der Uteruskontraktions-Signale (UC), berechnet Intervalle und Dauern
+    und klassifiziert die Wehen nach vordefinierten Kriterien."""
     def __init__(self, CTG_Data):
         """
-        ctg_data: Instanz von CTG_Data, bei der read_csv() schon aufgerufen wurde
-        und die eine 'UC'-Spalte enthält.
+         Initialisiert die Wehen-Analyse.
+        Args:
+            CTG_Data: Instanz einer Klasse mit geladenem CTG-Daten-DataFrame 'df',
+                      der eine Spalte 'UC' mit Uteruskontraktionswerten enthält.
+        Raises:
+            ValueError: Wenn die Spalte 'UC' im DataFrame fehlt
         """
         self.ctg = CTG_Data
         if 'UC' not in self.ctg.df.columns:
@@ -19,6 +26,9 @@ class WehenAnalysis:
     def detect_contractions(self, height=None, distance=None):
         """
         Findet Wehen-Peaks und bestimmt Intervalle sowie Dauer.
+         Args:
+            height (float, optional): Mindesthöhe der Peaks. Weiterleitung an scipy.find_peaks.
+            distance (float, optional): Mindestabstand zwischen Peaks in Samples. 
         Rückgabe: DataFrame mit Spalten
           - time     : Zeitpunkt (s) des Peaks
           - interval : Abstand (s) zur vorherigen Wehe (NaN bei erster)

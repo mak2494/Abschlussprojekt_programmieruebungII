@@ -9,8 +9,14 @@ import wave
 import base64
 
 class CTGSimulator:
+    """
+    Simulator für die Echtzeit-Visualisierung und Alarmierung bei Cardiotokographie (CTG).
+    Liest fetale Herzfrequenzdaten (FHR) ein, zeigt Live-Metriken und Diagramme an
+    und löst Alarmtöne sowie Warnmeldungen aus, wenn die FHR unter einen definierten Schwellenwert fällt.
+    """
     def __init__(self, csv_path: str, lb_col: str, bpm_threshold: float = 110.0, interval: float = 1.0):
         """
+        Initialisiert den CTG-Simulator.
         csv_path: Pfad zur CTG-Datei (CSV)
         lb_col: Spalte mit fetaler Herzfrequenz
         bpm_threshold: Schwellwert für den Alarm (bpm)
@@ -29,7 +35,7 @@ class CTGSimulator:
             st.session_state['sim_running'] = False
 
     def load(self):
-        """Lädt die CSV und wandelt den Index in Timedelta um."""
+        """Lädt die CSV und wandelt den Zeitindex in pandas Timedelta um."""
         self.df = pd.read_csv(self.csv_path, index_col='time')
         self.df.index = pd.to_timedelta(self.df.index, unit='s')
         if self.lb_col not in self.df.columns:
@@ -119,7 +125,8 @@ class CTGSimulator:
                 st.error(alert)
 
     def run(self):
-        """Starte die Live-Simulation und bereite Alerts vor."""
+        """Starte die Live-Simulation und bereite Alerts vor.
+        Löscht vorherige Alerts aus dem Session-State."""
         # Nur beim Start neu leeren
         st.session_state['sim_alerts'] = []
         self.run_live()

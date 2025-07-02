@@ -40,9 +40,9 @@ with st.sidebar:
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "👤 Person anzeigen",
     "📊 CTG Auswertung",
-    "➕ Neue Person anlegen",
     "📄 PDF-Bericht",
-    "▶️ Live-Simulation"
+    "▶️ Live-Simulation",
+    "➕ Neue Person anlegen"
 ])
 #----------------------------------------------
 # Tab 1: Person anzeigen & bearbeiten
@@ -219,9 +219,9 @@ with tab2:
         st.info("Bitte links im Menü eine Person auswählen.")
 
 # ---------------------------------------------
-# Tab 3: Neue Person anlegen
+# Tab 5: Neue Person anlegen
 # ---------------------------------------------
-with tab3:
+with tab5:
     st.write("## ➕ Neue Person anlegen")
 
     with st.form("new_person_form"):
@@ -289,9 +289,11 @@ with tab3:
                 if uploaded_img:
                     st.info("Profilbild erfolgreich gespeichert.")
                 st.rerun()
+#----------------------------------------------
+# Tab 3: Person anzeigen & bearbeiten
+# ---------------------------------------------
 
-
-with tab4:
+with tab3:
     st.write("## 📄 Bericht erstellen")
 
     if st.session_state.current_user in person_names:
@@ -372,9 +374,9 @@ with tab4:
         st.info("Bitte links im Menü eine Person auswählen.")
 
 #----------------------------------------------
-# Tab 5: Live-Simulation & Alarm
+# Tab 4: Live-Simulation & Alarm
 # ---------------------------------------------
-with tab5:
+with tab4:
     st.title("▶️ CTG Live-Simulation")
 
     # 1) Vorbedingungen
