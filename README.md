@@ -119,7 +119,7 @@ time,LB,UC
 
 ## 📸 Vorschau
 
-*Screenshot kann hier eingefügt werden*
+![Vorschau](data/pictures/App_Vorschau.png)
 
 ---
 
