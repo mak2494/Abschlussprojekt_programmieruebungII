@@ -102,7 +102,7 @@ class CTG_Data:
                 showgrid=True,
                 gridcolor='lightgrey',
                 ticks='outside',
-                range=[ticks[0], ticks[-1]] if ticks else None,
+                range=[0, min(300, ticks[-1])],
                 rangeslider=dict(visible=show_rangeslider),
                 type='linear'
             ),

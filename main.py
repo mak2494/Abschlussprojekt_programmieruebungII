@@ -197,7 +197,7 @@ with tab2:
             st.write("### Wehen-Abstand und -Dauer")
             st.write("###### Wehenstärke und -Abstand einstellen um festzulegen, welche Ausschläge im CTG als Wehen erkannt werden sollen.")
             # Parameter mit Slidern einstellbar machen
-            min_height = st.slider("Minimale Wehenstärke", min_value=0, max_value=50, value=5, step=1, key="wehen_height")
+            min_height = st.slider("Minimale Wehenstärke", min_value=0, max_value=50, value=20, step=1, key="wehen_height")
             min_distance = st.slider("Minimaler Abstand zwischen Wehen (s)", 5, 300, 120, key="wehen_distance")
 
             # Analyse-Objekt erzeugen
@@ -339,7 +339,7 @@ with tab4:
             selected_time_range = (start_time, end_time)
 
         # Wehenparameter aus session_state oder mit Standardwerten
-        wehen_height = st.session_state.get("wehen_height", 5.0)
+        wehen_height = st.session_state.get("wehen_height", 5)
         wehen_distance = st.session_state.get("wehen_distance", 120)
 
 
