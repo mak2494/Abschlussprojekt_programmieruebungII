@@ -80,18 +80,15 @@ time,LB,UC
 
 ```bash
 git clone <https://github.com/mak2494/Abschlussprojekt_programmieruebungII.git>
-cd Abschlussprojekt_programmieruebungII
 ```
 
-### 2. 🧱 Abhängigkeiten installieren
+### 2. 📦 Abhängigkeiten installieren
 
 Die App nutzt [pdm](https://pdm.fming.dev/latest/) zur Paketverwaltung:
 
 ```bash
 pdm install
 ```
-
-> Alternativ kann auch `pip install -r requirements.txt` verwendet werden (nicht empfohlen, wenn `pdm.lock` existiert).
 
 ### 3. 🚀 Anwendung starten
 
