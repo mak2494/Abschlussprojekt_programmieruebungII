@@ -90,7 +90,8 @@ class CTGSimulator:
 
             # Alarm prüfen
             if bpm < self.bpm_threshold:
-                msg = f"⚠️ Alarm! FHR unter {self.bpm_threshold} bpm: aktuell {bpm:.1f} bpm"
+                current_time = tdelta.total_seconds()
+                msg = f"⚠️ Alarm! FHR niedrig bei {current_time} Sekunden HRF {bpm:.1f} bpm"
                 st.error(msg)
                 st.session_state['sim_alerts'].append(msg)
 
