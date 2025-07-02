@@ -63,33 +63,43 @@ Abschlussprojekt_programmieruebungII/
 
 ## 💾 Beispiel-CSV
 
-Ein gültiges Beispiel enthält z. B.:
-
 ```csv
 time,LB,UC
 1,140,20
 2,138,19
 ...
+```
+
+> Mehrlingsdaten wie `LB1`, `LB2` werden ebenfalls unterstützt.
 
 ---
 
 ## 🛠️ Installation
 
-1. **Projekt klonen**
-   ```bash
-   git clone <REPO_URL>
-   cd Abschlussprojekt_programmieruebungII
-   ```
+### 1. 📥 Projekt klonen
 
-2. **Abhängigkeiten mit [pdm](https://pdm.fming.dev/latest/) installieren**
-   ```bash
-   pdm install
-   ```
+```bash
+git clone <https://github.com/mak2494/Abschlussprojekt_programmieruebungII.git>
+cd Abschlussprojekt_programmieruebungII
+```
 
-3. **Starten der App**
-   ```bash
-   pdm run streamlit run main.py
-   ```
+### 2. 🧱 Abhängigkeiten installieren
+
+Die App nutzt [pdm](https://pdm.fming.dev/latest/) zur Paketverwaltung:
+
+```bash
+pdm install
+```
+
+> Alternativ kann auch `pip install -r requirements.txt` verwendet werden (nicht empfohlen, wenn `pdm.lock` existiert).
+
+### 3. 🚀 Anwendung starten
+
+```bash
+streamlit run main.py
+```
+
+Die Anwendung startet dann im Standardbrowser und ist einsatzbereit.
 
 ---
 
@@ -97,7 +107,7 @@ time,LB,UC
 
 - `streamlit`
 - `fpdf`
-- `pandas` 
+- `pandas`
 - `numpy`
 - `plotly`
 - `kaleido`
@@ -108,23 +118,20 @@ time,LB,UC
 
 ## 📌 Hinweise
 
-- Die Anwendung speichert alle Daten **lokal** im Verzeichnis `data/`.
 - Die App ist **nicht für den klinischen Einsatz geeignet**, sondern dient ausschließlich zu **Lern- und Analysezwecken**.
-- Es wird empfohlen, die Anwendung im **Chrome-Browser** zu nutzen, da nur dieser vollständig unterstützt wird.
-- Die JSON-Datei `data/person_db.json` wird beim Anlegen oder Bearbeiten **dauerhaft verändert**.
-- CTG-Dateien müssen das Format mit den Spaltennamen `time`, `LB`, `UC` einhalten.  
-  Weitere Spalten wie `LB1`, `LB2` für Mehrlingsschwangerschaften werden ebenfalls unterstützt.
+- **Google Chrome** wird als bevorzugter Browser empfohlen.
+- CTG-CSV-Dateien müssen mindestens die Spalten `time`, `LB`, `UC` enthalten.
 
 ---
 
 ## 📸 Vorschau
 
-![Vorschau](data/pictures/App_Vorschau.png)
+![App-Vorschau](data/pictures/App_Vorschau.png)
 
 ---
 
-## 👩‍💻 Entwickelt im Rahmen des Moduls „Programmierübungen 2“
+## 👩‍💻 Projektinfos
 
-- 💼 Management Center Innsbruck
-- 👩‍🔬 Studierende: Marie Köhl und Hannah Kleutgens
-- 📅 Sommersemester 2025 MGST
+- Modul: **Programmierübungen 2** – Management Center Innsbruck  
+- Studierende: **Marie Köhl** & **Hannah Kleutgens**  
+- Semester: **Sommersemester 2025**
